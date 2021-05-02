@@ -12,7 +12,7 @@ set(SFML_STATIC_LIBRARIES TRUE)
 
 find_package(SFML 2.5.1 COMPONENTS graphics audio REQUIRED)
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp mandelbrot.cpp mandelbrot.h)
 
 if (SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})

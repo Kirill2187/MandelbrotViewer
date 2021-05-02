@@ -1,19 +1,39 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
-#include "iostream"
+#include "mandelbrot.h"
+#include <iostream>
 
 using namespace sf;
 
-unsigned int width = 800, height = 600;
+using ld = long double;
+
+unsigned int width = 800, height = 800;
 RenderWindow window;
 
-bool isBoxActive = false;
+bool isSelectionBoxActive = false;
 Vector2i lastPressPosition;
+Color selectionBoxColor = Color(255, 50, 50);
 
-Color boxColor = Color(255, 50, 50);
+Sprite mandelbrotImg;
+Texture mandelbrotTexture;
+
+ld cx = 0, cy = 0;
+ld sx = 2, sy = 2;
+
+void calculateMandelbrot() {
+    Image img; img.create(width, height);
+    for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            img.setPixel(i, j, mandelbrot(i, j, width, height, sx, sy, cx, cy));
+        }
+    }
+    img.saveToFile("mandelbrot.png");
+    mandelbrotTexture.loadFromImage(img);
+    mandelbrotImg = Sprite(mandelbrotTexture);
+}
 
 void zoom(Vector2i p1, Vector2i p2) {
-
+    calculateMandelbrot();
 }
 
 void processEvent(Event &event) {
@@ -25,21 +45,23 @@ void processEvent(Event &event) {
         height = event.size.height;
         sf::FloatRect visibleArea(0, 0, width, height);
         window.setView(sf::View(visibleArea));
+
+        calculateMandelbrot();
     }
     else if (event.type == Event::MouseButtonPressed) {
-        isBoxActive = true;
+        isSelectionBoxActive = true;
         lastPressPosition = {event.mouseButton.x, event.mouseButton.y};
     }
     else if (event.type == Event::MouseMoved) {
 
     }
     else if (event.type == Event::MouseButtonReleased) {
-        if (isBoxActive)
+        if (isSelectionBoxActive)
             zoom(lastPressPosition, {event.mouseButton.x, event.mouseButton.y});
-        isBoxActive = false;
+        isSelectionBoxActive = false;
     }
     else if (event.type == sf::Event::LostFocus) {
-        isBoxActive = false;
+        isSelectionBoxActive = false;
     }
 }
 
@@ -51,11 +73,12 @@ void drawBox() {
     rect.setFillColor(Color::Transparent);
     rect.setPosition(lastPressPosition.x, lastPressPosition.y);
     rect.setOutlineThickness(1);
-    rect.setOutlineColor(boxColor);
+    rect.setOutlineColor(selectionBoxColor);
     window.draw(rect);
 }
 
 int main() {
+    calculateMandelbrot();
     window.create(VideoMode(width, height), "Test window");
 
     while (window.isOpen()) {
@@ -65,7 +88,9 @@ int main() {
         }
         window.clear();
 
-        if (isBoxActive)
+        window.draw(mandelbrotImg);
+
+        if (isSelectionBoxActive)
             drawBox();
 
         window.display();
