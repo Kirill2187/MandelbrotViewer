@@ -32,7 +32,17 @@ void calculateMandelbrot() {
     mandelbrotImg = Sprite(mandelbrotTexture);
 }
 
+std::pair<ld, ld> screenToWorld(Vector2f p) {
+    return {cx + sx * ((ld)p.x / width - 0.5),
+            cy + sy * ((ld)p.y / height - 0.5)};
+}
+
 void zoom(Vector2i p1, Vector2i p2) {
+    auto p = screenToWorld(((Vector2f)p1 + (Vector2f)p2) / 2.0f);
+    cx = p.first; cy = p.second;
+    sx = sx / width * abs(p1.x - p2.x);
+    sy = sy / height * abs(p1.y - p2.y);
+
     calculateMandelbrot();
 }
 
