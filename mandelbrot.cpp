@@ -9,7 +9,13 @@ const int MAX_ITER = 1024;
 Color getColor(int iter) {
     if (iter == MAX_ITER)
         return Color::Black;
-    return (iter == MAX_ITER ? Color::Black : Color::White);
+    ld q = (ld) iter / (ld) MAX_ITER;
+    if (q > 0.4) {
+        return Color(q * 255, 255, q * 255);
+    }
+    else {
+        return Color(0, q * 255, 0);
+    }
 }
 
 Color mandelbrot(int x, int y, int windowWidth, int windowHeight, ld sx, ld sy, ld centerX, ld centerY) {
