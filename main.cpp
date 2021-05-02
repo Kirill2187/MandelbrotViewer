@@ -4,10 +4,9 @@
 #include <iostream>
 
 using namespace sf;
-
 using ld = long double;
 
-unsigned int width = 800, height = 800;
+unsigned int width = 1000, height = 800;
 RenderWindow window;
 
 bool isSelectionBoxActive = false;
@@ -17,8 +16,8 @@ Color selectionBoxColor = Color(255, 50, 50);
 Sprite mandelbrotImg;
 Texture mandelbrotTexture;
 
-ld cx = 0, cy = 0;
-ld sx = 2, sy = 2;
+ld cx = -0.5, cy = 0;
+ld sx = 2.3, sy = sx * 0.8;
 
 void calculateMandelbrot() {
     Image img; img.create(width, height);
@@ -89,7 +88,7 @@ void drawBox() {
 
 int main() {
     calculateMandelbrot();
-    window.create(VideoMode(width, height), "Test window");
+    window.create(VideoMode(width, height), "Mandelbrot Viewer");
 
     while (window.isOpen()) {
         Event event;
