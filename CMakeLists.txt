@@ -20,6 +20,8 @@ find_package(SFML REQUIRED COMPONENTS window graphics)
 find_package(TGUI REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics sfml-window tgui)
+file(COPY theme DESTINATION ${CMAKE_BINARY_DIR})
+
 
 
 

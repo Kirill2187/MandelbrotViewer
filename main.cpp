@@ -7,7 +7,9 @@
 using namespace sf;
 using ld = long double;
 
-const float PANEL_SIZE = 0.06;
+#define THEME_PATH "theme/Black.txt"
+#define PANEL_SIZE 0.06
+
 unsigned int width = 1000, height = 800;
 unsigned int panel_height = height * PANEL_SIZE;
 RenderWindow window;
@@ -23,13 +25,14 @@ ld cx = -0.5, cy = 0;
 ld sx = 2.3, sy = sx * 0.8;
 
 tgui::GuiSFML gui;
+tgui::Theme mainTheme{THEME_PATH};
 
-std::map<std::string, Theme> themes = {
+std::map<std::string, ColoringTheme> themes = {
         {"Green", GREEN},
         {"Red", RED},
         {"Blue", BLUE},
 };
-std::vector<int> iterations = {128, 256, 512, 1024, 2048};
+std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048};
 
 void calculateMandelbrot() {
     window.clear();
@@ -110,19 +113,21 @@ void saveImage() {
 
 void createPanel() {
     gui.setTarget(window);
+    tgui::Layout panelHeight(std::to_string(int(PANEL_SIZE * 100)) + "%");
+    tgui::Layout panelYPosition(std::to_string(100 - int(PANEL_SIZE * 100)) + "%");
 
     auto saveButton = tgui::Button::create("Save image");
-    tgui::Layout buttonHeight(std::to_string(int(PANEL_SIZE * 100)) + "%");
-    tgui::Layout buttonYPosition(std::to_string(100 - int(PANEL_SIZE * 100)) + "%");
-    saveButton->setSize("20%", buttonHeight);
+    saveButton->setRenderer(mainTheme.getRenderer("Button"));
+    saveButton->setSize("20%", panelHeight);
     saveButton->setTextSize(16);
-    saveButton->setPosition(0, buttonYPosition);
+    saveButton->setPosition(0, panelYPosition);
     saveButton->onPress(&saveImage);
     gui.add(saveButton);
 
     auto themeBox = tgui::ComboBox::create();
-    themeBox->setSize("20%", buttonHeight);
-    themeBox->setPosition("20%", buttonYPosition);
+    themeBox->setRenderer(mainTheme.getRenderer("ComboBox"));
+    themeBox->setSize("20%", panelHeight);
+    themeBox->setPosition("22%", panelYPosition);
     for (const auto& element : themes) {
         themeBox->addItem(element.first);
     }
@@ -136,8 +141,9 @@ void createPanel() {
     themeBox->setSelectedItem("Green");
 
     auto iterBox = tgui::ComboBox::create();
-    iterBox->setSize("20%", buttonHeight);
-    iterBox->setPosition("40%", buttonYPosition);
+    iterBox->setRenderer(mainTheme.getRenderer("ComboBox"));
+    iterBox->setSize("20%", panelHeight);
+    iterBox->setPosition("44%", panelYPosition);
     for (const auto& element : iterations) {
         iterBox->addItem(std::to_string(element) + " iterations");
     }

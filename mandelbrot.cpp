@@ -5,16 +5,16 @@ using namespace sf;
 using ld = long double;
 using ll = long long;
 
-const int BRIGHTNESS = 500;
+#define BRIGHTNESS 500
 
 int max_iter = 128;
-Theme currentTheme = GREEN;
+ColoringTheme currentTheme = GREEN;
 
 void setMaxIter(int iter) {
     max_iter = iter;
 }
 
-void setTheme(Theme theme) {
+void setTheme(ColoringTheme theme) {
     currentTheme = theme;
 }
 
@@ -23,14 +23,16 @@ Color getColor(int iter) {
         return Color::Black;
     ld q = (ld) iter / (ld) max_iter;
     if (q > 0.5) {
-        return Color(currentTheme == RED ? 255 : (q - 0.5) * BRIGHTNESS,
-                     currentTheme == GREEN ? 255 : (q - 0.5) * BRIGHTNESS,
-                     currentTheme == BLUE ? 255 : (q - 0.5) * BRIGHTNESS);
+        unsigned int c = (q - 0.5) * BRIGHTNESS;
+        return Color(currentTheme == RED ? 255 : c,
+                     currentTheme == GREEN ? 255 : c,
+                     currentTheme == BLUE ? 255 : c);
     }
     else {
-        return Color(currentTheme == RED ? q * 2 * 255 : 0,
-                     currentTheme == GREEN ? q * 2 * 255 : 0,
-                     currentTheme == BLUE ? q * 2 * 255 : 0);
+        unsigned int c = q * 510;
+        return Color(currentTheme == RED ? c : 0,
+                     currentTheme == GREEN ? c : 0,
+                     currentTheme == BLUE ? c : 0);
     }
 }
 
