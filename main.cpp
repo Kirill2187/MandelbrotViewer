@@ -1,7 +1,8 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 #include "mandelbrot.h"
-#include "TGUI/TGUI.hpp"
+#include "TGUI/AllWidgets.hpp"
+#include <TGUI/Backends/SFML/GuiSFML.hpp>
 #include <iostream>
 
 using namespace sf;
@@ -108,6 +109,12 @@ void createPanel() {
     saveButton->setPosition(0, buttonYPosition);
     saveButton->onPress(&saveImage);
     gui.add(saveButton);
+
+    auto themeBox = tgui::ComboBox::create();
+    themeBox->setSize("20%", buttonHeight);
+    themeBox->setPosition(saveButton->getSize().x, buttonYPosition);
+    themeBox->addItem("Green");
+    gui.add(themeBox);
 }
 
 int main() {
