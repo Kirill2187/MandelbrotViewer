@@ -3,7 +3,6 @@
 using namespace sf;
 
 using ld = long double;
-using ll = long long;
 
 #define BRIGHTNESS 500
 
@@ -42,8 +41,9 @@ Color getColor(int iter) {
     }
 }
 
-Color mandelbrot(int x, int y, int windowWidth, int windowHeight, ld sx, ld sy, ld centerX, ld centerY) {
-    ld x1 = ((ld)x / windowWidth - 0.5) * sx + centerX, y1 = ((ld)y / windowHeight - 0.5) * sy + centerY;
+Color mandelbrot(int x, int y, int windowWidth, int windowHeight, Frame frame) {
+    ld x1 = ((ld)x / windowWidth - 0.5) * frame.sx + frame.cx;
+    ld y1 = ((ld)y / windowHeight - 0.5) * frame.sy + frame.cy;
     ld cx = x1, cy = y1;
     for (int i = 0; i < max_iter; ++i) {
         ld xs = x1 * x1, ys = y1 * y1;

@@ -7,7 +7,11 @@ enum ColoringTheme {
     RED, GREEN, BLUE
 };
 
-sf::Color mandelbrot(int x, int y, int windowWidth, int windowHeight, ld sx, ld sy, ld centerX, ld centerY);
+struct Frame {
+    ld cx, cy, sx, sy;
+};
+
+sf::Color mandelbrot(int x, int y, int windowWidth, int windowHeight, Frame frame);
 void setMaxIter(int iter);
 int getMaxIter();
 ColoringTheme getTheme();
