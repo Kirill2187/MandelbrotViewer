@@ -7,7 +7,9 @@
 using namespace sf;
 using ld = long double;
 
+const float PANEL_SIZE = 0.06;
 unsigned int width = 1000, height = 800;
+unsigned int panel_height = height * PANEL_SIZE;
 RenderWindow window;
 
 bool isSelectionBoxActive = false;
@@ -23,13 +25,12 @@ ld sx = 2.3, sy = sx * 0.8;
 tgui::GuiSFML gui;
 
 void calculateMandelbrot() {
-    Image img; img.create(width, height);
+    Image img; img.create(width, height - panel_height);
     for (int i = 0; i < width; ++i) {
-        for (int j = 0; j < height; ++j) {
-            img.setPixel(i, j, mandelbrot(i, j, width, height, sx, sy, cx, cy));
+        for (int j = 0; j < height - panel_height; ++j) {
+            img.setPixel(i, j, mandelbrot(i, j, width, height - panel_height, sx, sy, cx, cy));
         }
     }
-    img.saveToFile("mandelbrot.png");
     mandelbrotTexture.loadFromImage(img);
     mandelbrotImg = Sprite(mandelbrotTexture);
 }
@@ -55,22 +56,25 @@ void processEvent(Event &event) {
     else if (event.type == Event::Resized) {
         width = event.size.width;
         height = event.size.height;
+        panel_height = height * PANEL_SIZE;
         sf::FloatRect visibleArea(0, 0, width, height);
         window.setView(sf::View(visibleArea));
+        gui.handleEvent(event);
 
         calculateMandelbrot();
     }
-    else if (event.type == Event::MouseButtonPressed) {
+    else if (event.type == Event::MouseButtonPressed && event.mouseButton.y < height - panel_height) {
         isSelectionBoxActive = true;
         lastPressPosition = {event.mouseButton.x, event.mouseButton.y};
     }
-    else if (event.type == Event::MouseMoved) {
-
-    }
     else if (event.type == Event::MouseButtonReleased) {
-        if (isSelectionBoxActive)
+        if (isSelectionBoxActive && event.mouseButton.y < height - panel_height)
             zoom(lastPressPosition, {event.mouseButton.x, event.mouseButton.y});
         isSelectionBoxActive = false;
+    }
+    else if (event.type == Event::MouseMoved) {
+        if (event.mouseMove.y >= height - panel_height)
+            isSelectionBoxActive = false;
     }
     else if (event.type == sf::Event::LostFocus) {
         isSelectionBoxActive = false;
@@ -89,17 +93,22 @@ void drawBox() {
     window.draw(rect);
 }
 
-void createSaveButton() {
+void createPanel() {
+    gui.setTarget(window);
+
     auto saveButton = tgui::Button::create("Save image");
-    saveButton->setSize("5%", "5%");
+    tgui::Layout buttonHeight(std::to_string(int(PANEL_SIZE * 100)) + "%");
+    tgui::Layout buttonYPosition(std::to_string(100 - int(PANEL_SIZE * 100)) + "%");
+    saveButton->setSize("30%", buttonHeight);
+    saveButton->setTextSize(24);
+    saveButton->setPosition(0, buttonYPosition);
     gui.add(saveButton);
 }
 
 int main() {
     calculateMandelbrot();
     window.create(VideoMode(width, height), "Mandelbrot Viewer");
-    createSaveButton();
-    gui.mainLoop();
+    createPanel();
 
     while (window.isOpen()) {
         Event event;
@@ -109,6 +118,7 @@ int main() {
         window.clear();
 
         window.draw(mandelbrotImg);
+        gui.draw();
 
         if (isSelectionBoxActive)
             drawBox();
