@@ -9,6 +9,8 @@ enum ColoringTheme {
 
 sf::Color mandelbrot(int x, int y, int windowWidth, int windowHeight, ld sx, ld sy, ld centerX, ld centerY);
 void setMaxIter(int iter);
+int getMaxIter();
+ColoringTheme getTheme();
 void setTheme(ColoringTheme theme);
 
 #endif

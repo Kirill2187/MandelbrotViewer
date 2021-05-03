@@ -39,14 +39,29 @@ void calculateMandelbrot() {
     gui.draw();
     window.display();
 
+    auto progressBar = gui.get<tgui::ProgressBar>("bar");
+    int mx = width * (height - panel_height);
+    int barValue = 0;
+    progressBar->setValue(0);
+
     Image img; img.create(width, height - panel_height);
     for (int i = 0; i < width; ++i) {
         for (int j = 0; j < height - panel_height; ++j) {
             img.setPixel(i, j, mandelbrot(i, j, width, height - panel_height, sx, sy, cx, cy));
+            int newBarValue = 10 * (i * width + j) / mx;
+            if (newBarValue > barValue) {
+                barValue = newBarValue;
+                progressBar->setValue(barValue - 1);
+
+                window.clear();
+                gui.draw();
+                window.display();
+            }
         }
     }
     mandelbrotTexture.loadFromImage(img);
     mandelbrotImg = Sprite(mandelbrotTexture);
+    progressBar->setValue(progressBar->getMaximum());
 }
 
 std::pair<ld, ld> screenToWorld(Vector2f p) {
@@ -127,15 +142,16 @@ void createPanel() {
     auto themeBox = tgui::ComboBox::create();
     themeBox->setRenderer(mainTheme.getRenderer("ComboBox"));
     themeBox->setSize("20%", panelHeight);
-    themeBox->setPosition("22%", panelYPosition);
+    themeBox->setPosition("21%", panelYPosition);
     for (const auto& element : themes) {
         themeBox->addItem(element.first);
     }
     themeBox->setTextSize(16);
     themeBox->onItemSelect([&] {
         auto box = gui.get<tgui::ComboBox>("themeBox");
+        auto prevTheme = getTheme();
         setTheme(themes[box->getSelectedItem().toStdString()]);
-        calculateMandelbrot();
+        if (prevTheme != getTheme()) calculateMandelbrot();
     });
     gui.add(themeBox, "themeBox");
     themeBox->setSelectedItem("Green");
@@ -143,24 +159,34 @@ void createPanel() {
     auto iterBox = tgui::ComboBox::create();
     iterBox->setRenderer(mainTheme.getRenderer("ComboBox"));
     iterBox->setSize("20%", panelHeight);
-    iterBox->setPosition("44%", panelYPosition);
+    iterBox->setPosition("42%", panelYPosition);
     for (const auto& element : iterations) {
         iterBox->addItem(std::to_string(element) + " iterations");
     }
     iterBox->setTextSize(16);
     iterBox->onItemSelect([&] {
         auto box = gui.get<tgui::ComboBox>("iterBox");
+        int prevIter = getMaxIter();
         setMaxIter(iterations[box->getSelectedItemIndex()]);
-        calculateMandelbrot();
+        if (prevIter != getMaxIter()) calculateMandelbrot();
     });
     gui.add(iterBox, "iterBox");
     iterBox->setSelectedItemByIndex(2);
+
+    auto progressBar = tgui::ProgressBar::create();
+    progressBar->setRenderer(mainTheme.getRenderer("ProgressBar"));
+    progressBar->setPosition("63%", panelYPosition);
+    progressBar->setSize("37%", panelHeight);
+    progressBar->setMinimum(0); progressBar->setMaximum(15);
+    progressBar->setValue(0);
+    gui.add(progressBar, "bar");
 }
 
 int main() {
     window.create(VideoMode(width, height), "Mandelbrot Viewer");
     window.setFramerateLimit(24);
     createPanel();
+    calculateMandelbrot();
 
     while (window.isOpen()) {
         Event event;
