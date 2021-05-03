@@ -4,7 +4,7 @@ using namespace sf;
 
 using ld = long double;
 
-#define BRIGHTNESS 500
+#define BRIGHTNESS 450
 
 int max_iter = 256;
 ColoringTheme currentTheme = GREEN;
@@ -27,7 +27,14 @@ Color getColor(int iter) {
     if (iter == max_iter)
         return Color::Black;
     ld q = (ld) iter / (ld) max_iter;
-    if (q > 0.5) {
+    if (q > 0.9) {
+        unsigned int c = (-4 * q + 4) * BRIGHTNESS;
+        unsigned int c1 = (-10 * q + 10);
+        return Color(currentTheme == RED ? 255 * c1 : c,
+                     currentTheme == GREEN ? 255 * c1 : c,
+                     currentTheme == BLUE ? 255 * c1 : c);
+    }
+    else if (q > 0.5) {
         unsigned int c = (q - 0.5) * BRIGHTNESS;
         return Color(currentTheme == RED ? 255 : c,
                      currentTheme == GREEN ? 255 : c,
