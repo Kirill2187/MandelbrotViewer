@@ -13,7 +13,7 @@ using ld = long double;
 #define PANEL_SIZE 0.06
 
 unsigned int width = 1000, height = 800;
-unsigned int panel_height = height * PANEL_SIZE;
+unsigned int panelHeight = height * PANEL_SIZE;
 RenderWindow window;
 
 bool isSelectionBoxActive = false;
@@ -47,16 +47,17 @@ void calculateMandelbrot() {
         themeBox->setEnabled(false);
         iterBox->setEnabled(false);
 
-        int mx = width * (height - panel_height);
+        int imageHeight = height - panelHeight;
+        int mx = width * imageHeight;
         int barValue = 0;
         progressBar->setValue(0);
 
         isCalculationInProcess = true;
-        Image img; img.create(width, height - panel_height);
+        Image img; img.create(width, imageHeight);
         for (int i = 0; i < width; ++i) {
-            for (int j = 0; j < height - panel_height; ++j) {
-                img.setPixel(i, j, mandelbrot(i, j, width, height - panel_height, currentFrame));
-                int newBarValue = 100 * (i * width + j) / mx;
+            for (int j = 0; j < imageHeight; ++j) {
+                img.setPixel(i, j, mandelbrot(i, j, width, imageHeight, currentFrame));
+                int newBarValue = 100 * (i * imageHeight + j) / mx;
                 if (newBarValue > barValue) {
                     barValue = newBarValue;
                     progressBar->setValue(barValue);
@@ -77,14 +78,14 @@ void calculateMandelbrot() {
 
 std::pair<ld, ld> screenToWorld(Vector2f p) {
     return {currentFrame.cx + currentFrame.sx * ((ld)p.x / width - 0.5),
-            currentFrame.cy + currentFrame.sy * ((ld)p.y / (height - panel_height) - 0.5)};
+            currentFrame.cy + currentFrame.sy * ((ld)p.y / (height - panelHeight) - 0.5)};
 }
 
 void zoom(Vector2i p1, Vector2i p2) {
     auto p = screenToWorld(((Vector2f)p1 + (Vector2f)p2) / 2.0f);
     ld cx = p.first; ld cy = p.second;
     ld sx = currentFrame.sx / width * abs(p1.x - p2.x);
-    ld sy = currentFrame.sy / (height - panel_height) * abs(p1.y - p2.y);
+    ld sy = currentFrame.sy / (height - panelHeight) * abs(p1.y - p2.y);
     framesStack.push_back({cx, cy, sx, sy});
     currentFrame = framesStack.back();
 
@@ -107,24 +108,24 @@ void processEvent(Event &event) {
     else if (event.type == Event::Resized) {
         width = event.size.width;
         height = event.size.height;
-        panel_height = height * PANEL_SIZE;
+        panelHeight = height * PANEL_SIZE;
         sf::FloatRect visibleArea(0, 0, width, height);
         window.setView(sf::View(visibleArea));
 
         calculateMandelbrot();
     }
     else if (event.type == Event::MouseButtonPressed
-    && event.mouseButton.y < height - panel_height) {
+    && event.mouseButton.y < height - panelHeight) {
         isSelectionBoxActive = true;
         lastPressPosition = {event.mouseButton.x, event.mouseButton.y};
     }
     else if (event.type == Event::MouseButtonReleased) {
-        if (isSelectionBoxActive && event.mouseButton.y < height - panel_height)
+        if (isSelectionBoxActive && event.mouseButton.y < height - panelHeight)
             zoom(lastPressPosition, {event.mouseButton.x, event.mouseButton.y});
         isSelectionBoxActive = false;
     }
     else if (event.type == Event::MouseMoved) {
-        if (event.mouseMove.y >= height - panel_height)
+        if (event.mouseMove.y >= height - panelHeight)
             isSelectionBoxActive = false;
     }
     else if (event.type == sf::Event::LostFocus) {
