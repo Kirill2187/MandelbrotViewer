@@ -3,7 +3,7 @@ project(MandelbrotViewer)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set(PROJECT_NAME MandelbrotViewer)
 set(SFML_ROOT_DIR "C:/SFML")

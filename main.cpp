@@ -3,6 +3,8 @@
 #include "mandelbrot.h"
 #include "TGUI/AllWidgets.hpp"
 #include <TGUI/Backends/SFML/GuiSFML.hpp>
+#include "thread"
+#include "mutex"
 
 using namespace sf;
 using ld = long double;
@@ -15,6 +17,7 @@ unsigned int panel_height = height * PANEL_SIZE;
 RenderWindow window;
 
 bool isSelectionBoxActive = false;
+bool isCalculationInProcess = false;
 Vector2i lastPressPosition;
 const Color selectionBoxColor = Color(255, 50, 50);
 
@@ -35,33 +38,31 @@ std::map<std::string, ColoringTheme> themes = {
 std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048};
 
 void calculateMandelbrot() {
-    window.clear();
-    gui.draw();
-    window.display();
+    std::thread thread([] {
+        auto progressBar = gui.get<tgui::ProgressBar>("bar");
+        int mx = width * (height - panel_height);
+        int barValue = 0;
+        progressBar->setValue(0);
 
-    auto progressBar = gui.get<tgui::ProgressBar>("bar");
-    int mx = width * (height - panel_height);
-    int barValue = 0;
-    progressBar->setValue(0);
-
-    Image img; img.create(width, height - panel_height);
-    for (int i = 0; i < width; ++i) {
-        for (int j = 0; j < height - panel_height; ++j) {
-            img.setPixel(i, j, mandelbrot(i, j, width, height - panel_height, sx, sy, cx, cy));
-            int newBarValue = 10 * (i * width + j) / mx;
-            if (newBarValue > barValue) {
-                barValue = newBarValue;
-                progressBar->setValue(barValue - 1);
-
-                window.clear();
-                gui.draw();
-                window.display();
+        isCalculationInProcess = true;
+        Image img; img.create(width, height - panel_height);
+        for (int i = 0; i < width; ++i) {
+            for (int j = 0; j < height - panel_height; ++j) {
+                img.setPixel(i, j, mandelbrot(i, j, width, height - panel_height, sx, sy, cx, cy));
+                int newBarValue = 100 * (i * width + j) / mx;
+                if (newBarValue > barValue) {
+                    barValue = newBarValue;
+                    progressBar->setValue(barValue);
+                }
             }
         }
-    }
-    mandelbrotTexture.loadFromImage(img);
-    mandelbrotImg = Sprite(mandelbrotTexture);
-    progressBar->setValue(progressBar->getMaximum());
+        mandelbrotTexture.loadFromImage(img);
+        mandelbrotImg = Sprite(mandelbrotTexture);
+
+        progressBar->setValue(progressBar->getMaximum());
+        isCalculationInProcess = false;
+    });
+    thread.detach();
 }
 
 std::pair<ld, ld> screenToWorld(Vector2f p) {
@@ -177,7 +178,7 @@ void createPanel() {
     progressBar->setRenderer(mainTheme.getRenderer("ProgressBar"));
     progressBar->setPosition("63%", panelYPosition);
     progressBar->setSize("37%", panelHeight);
-    progressBar->setMinimum(0); progressBar->setMaximum(15);
+    progressBar->setMinimum(0); progressBar->setMaximum(110);
     progressBar->setValue(0);
     gui.add(progressBar, "bar");
 }
@@ -197,7 +198,8 @@ int main() {
             processEvent(event);
         }
         window.clear();
-        window.draw(mandelbrotImg);
+        if (!isCalculationInProcess)
+            window.draw(mandelbrotImg);
         gui.draw();
 
         if (isSelectionBoxActive)
