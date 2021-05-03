@@ -1,6 +1,7 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 #include "mandelbrot.h"
+#include "TGUI/AllWidgets.hpp"
 #include <iostream>
 
 using namespace sf;
