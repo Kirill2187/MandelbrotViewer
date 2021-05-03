@@ -1,0 +1,10 @@
+#ifndef MANDELBROTVIEWER_SETTINGSWINDOW_H
+#define MANDELBROTVIEWER_SETTINGSWINDOW_H
+
+
+class SettingsWindow {
+
+};
+
+
+#endif

@@ -14,16 +14,12 @@ set(TGUI_DIR "${TGUI_ROOT_DIR}/lib/cmake/TGUI")
 set(SFML_STATIC_LIBRARIES TRUE)
 set(TGUI_STATIC_LIBRARIES TRUE)
 
-find_package(SFML 2.5.1 COMPONENTS graphics audio REQUIRED)
+add_executable(${PROJECT_NAME} main.cpp mandelbrot.cpp mandelbrot.h SettingsWindow.cpp SettingsWindow.h)
 
-add_executable(${PROJECT_NAME} main.cpp mandelbrot.cpp mandelbrot.h)
+find_package(SFML REQUIRED COMPONENTS system window graphics)
+find_package(TGUI REQUIRED)
 
-if (SFML_FOUND)
-    include_directories(${SFML_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} sfml-audio sfml-network sfml-graphics sfml-window sfml-system)
-endif()
-
-include_directories(${TGUI_ROOT_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics sfml-window sfml-system tgui)
 
 
 

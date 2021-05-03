@@ -1,7 +1,7 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 #include "mandelbrot.h"
-#include "TGUI/AllWidgets.hpp"
+#include "TGUI/TGUI.hpp"
 #include <iostream>
 
 using namespace sf;
@@ -19,6 +19,8 @@ Texture mandelbrotTexture;
 
 ld cx = -0.5, cy = 0;
 ld sx = 2.3, sy = sx * 0.8;
+
+tgui::GuiSFML gui;
 
 void calculateMandelbrot() {
     Image img; img.create(width, height);
@@ -87,9 +89,17 @@ void drawBox() {
     window.draw(rect);
 }
 
+void createSaveButton() {
+    auto saveButton = tgui::Button::create("Save image");
+    saveButton->setSize("5%", "5%");
+    gui.add(saveButton);
+}
+
 int main() {
     calculateMandelbrot();
     window.create(VideoMode(width, height), "Mandelbrot Viewer");
+    createSaveButton();
+    gui.mainLoop();
 
     while (window.isOpen()) {
         Event event;
