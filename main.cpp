@@ -3,7 +3,6 @@
 #include "mandelbrot.h"
 #include "TGUI/AllWidgets.hpp"
 #include <TGUI/Backends/SFML/GuiSFML.hpp>
-#include <iostream>
 
 using namespace sf;
 using ld = long double;
@@ -25,7 +24,18 @@ ld sx = 2.3, sy = sx * 0.8;
 
 tgui::GuiSFML gui;
 
+std::map<std::string, Theme> themes = {
+        {"Green", GREEN},
+        {"Red", RED},
+        {"Blue", BLUE},
+};
+std::vector<int> iterations = {128, 256, 512, 1024, 2048};
+
 void calculateMandelbrot() {
+    window.clear();
+    gui.draw();
+    window.display();
+
     Image img; img.create(width, height - panel_height);
     for (int i = 0; i < width; ++i) {
         for (int j = 0; j < height - panel_height; ++j) {
@@ -104,32 +114,57 @@ void createPanel() {
     auto saveButton = tgui::Button::create("Save image");
     tgui::Layout buttonHeight(std::to_string(int(PANEL_SIZE * 100)) + "%");
     tgui::Layout buttonYPosition(std::to_string(100 - int(PANEL_SIZE * 100)) + "%");
-    saveButton->setSize("30%", buttonHeight);
-    saveButton->setTextSize(24);
+    saveButton->setSize("20%", buttonHeight);
+    saveButton->setTextSize(16);
     saveButton->setPosition(0, buttonYPosition);
     saveButton->onPress(&saveImage);
     gui.add(saveButton);
 
     auto themeBox = tgui::ComboBox::create();
     themeBox->setSize("20%", buttonHeight);
-    themeBox->setPosition(saveButton->getSize().x, buttonYPosition);
-    themeBox->addItem("Green");
-    gui.add(themeBox);
+    themeBox->setPosition("20%", buttonYPosition);
+    for (const auto& element : themes) {
+        themeBox->addItem(element.first);
+    }
+    themeBox->setTextSize(16);
+    themeBox->onItemSelect([&] {
+        auto box = gui.get<tgui::ComboBox>("themeBox");
+        setTheme(themes[box->getSelectedItem().toStdString()]);
+        calculateMandelbrot();
+    });
+    gui.add(themeBox, "themeBox");
+    themeBox->setSelectedItem("Green");
+
+    auto iterBox = tgui::ComboBox::create();
+    iterBox->setSize("20%", buttonHeight);
+    iterBox->setPosition("40%", buttonYPosition);
+    for (const auto& element : iterations) {
+        iterBox->addItem(std::to_string(element) + " iterations");
+    }
+    iterBox->setTextSize(16);
+    iterBox->onItemSelect([&] {
+        auto box = gui.get<tgui::ComboBox>("iterBox");
+        setMaxIter(iterations[box->getSelectedItemIndex()]);
+        calculateMandelbrot();
+    });
+    gui.add(iterBox, "iterBox");
+    iterBox->setSelectedItemByIndex(2);
 }
 
 int main() {
-    calculateMandelbrot();
     window.create(VideoMode(width, height), "Mandelbrot Viewer");
+    window.setFramerateLimit(24);
     createPanel();
 
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
+            if (gui.handleEvent(event)) {
+                isSelectionBoxActive = false;
+            }
             processEvent(event);
-            gui.handleEvent(event);
         }
         window.clear();
-
         window.draw(mandelbrotImg);
         gui.draw();
 

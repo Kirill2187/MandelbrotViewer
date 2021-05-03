@@ -1,12 +1,11 @@
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/System/Vector3.hpp"
 #include "mandelbrot.h"
 using namespace sf;
 
 using ld = long double;
 using ll = long long;
 
-const int BRIGHTNESS = 120;
+const int BRIGHTNESS = 500;
 
 int max_iter = 128;
 Theme currentTheme = GREEN;
@@ -24,14 +23,14 @@ Color getColor(int iter) {
         return Color::Black;
     ld q = (ld) iter / (ld) max_iter;
     if (q > 0.5) {
-        return Color(currentTheme == RED ? 255 : q * BRIGHTNESS,
-                     currentTheme == GREEN ? 255 : q * BRIGHTNESS,
-                     currentTheme == BLUE ? 255 : q * BRIGHTNESS);
+        return Color(currentTheme == RED ? 255 : (q - 0.5) * BRIGHTNESS,
+                     currentTheme == GREEN ? 255 : (q - 0.5) * BRIGHTNESS,
+                     currentTheme == BLUE ? 255 : (q - 0.5) * BRIGHTNESS);
     }
     else {
-        return Color(currentTheme == RED ? q * 255 : 0,
-                     currentTheme == GREEN ? q * 255 : 0,
-                     currentTheme == BLUE ? q * 255 : 0);
+        return Color(currentTheme == RED ? q * 2 * 255 : 0,
+                     currentTheme == GREEN ? q * 2 * 255 : 0,
+                     currentTheme == BLUE ? q * 2 * 255 : 0);
     }
 }
 
