@@ -11,7 +11,7 @@ RenderWindow window;
 
 bool isSelectionBoxActive = false;
 Vector2i lastPressPosition;
-Color selectionBoxColor = Color(255, 50, 50);
+const Color selectionBoxColor = Color(255, 50, 50);
 
 Sprite mandelbrotImg;
 Texture mandelbrotTexture;
