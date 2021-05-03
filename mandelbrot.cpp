@@ -41,7 +41,7 @@ Color getColor(int iter) {
     }
 }
 
-Color mandelbrot(int x, int y, int windowWidth, int windowHeight, Frame frame) {
+Color mandelbrot(int x, int y, int windowWidth, int windowHeight, const Frame& frame) {
     ld x1 = ((ld)x / windowWidth - 0.5) * frame.sx + frame.cx;
     ld y1 = ((ld)y / windowHeight - 0.5) * frame.sy + frame.cy;
     ld cx = x1, cy = y1;

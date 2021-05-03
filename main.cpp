@@ -26,7 +26,7 @@ Texture mandelbrotTexture;
 
 const Frame startFrame = {-0.5, 0, 2.3, 2.3 * 0.8};
 Frame currentFrame = startFrame;
-std::vector<Frame> framesStack;
+std::vector<Frame> framesStack = {startFrame};
 
 tgui::GuiSFML gui;
 tgui::Theme mainTheme{THEME_PATH};
@@ -77,14 +77,14 @@ void calculateMandelbrot() {
 
 std::pair<ld, ld> screenToWorld(Vector2f p) {
     return {currentFrame.cx + currentFrame.sx * ((ld)p.x / width - 0.5),
-            currentFrame.cy + currentFrame.sy * ((ld)p.y / height - 0.5)};
+            currentFrame.cy + currentFrame.sy * ((ld)p.y / (height - panel_height) - 0.5)};
 }
 
 void zoom(Vector2i p1, Vector2i p2) {
     auto p = screenToWorld(((Vector2f)p1 + (Vector2f)p2) / 2.0f);
     ld cx = p.first; ld cy = p.second;
     ld sx = currentFrame.sx / width * abs(p1.x - p2.x);
-    ld sy = currentFrame.sy / height * abs(p1.y - p2.y);
+    ld sy = currentFrame.sy / (height - panel_height) * abs(p1.y - p2.y);
     framesStack.push_back({cx, cy, sx, sy});
     currentFrame = framesStack.back();
 
