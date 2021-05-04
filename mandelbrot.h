@@ -11,7 +11,6 @@ struct Frame {
     ld cx, cy, sx, sy;
 };
 
-sf::Color mandelbrot(int x, int y, int windowWidth, int windowHeight, const Frame& frame);
 void setMaxIter(int iter);
 int getMaxIter();
 ColoringTheme getTheme();

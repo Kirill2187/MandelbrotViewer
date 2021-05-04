@@ -18,12 +18,11 @@ unsigned int panelHeight = height * PANEL_SIZE;
 RenderWindow window;
 
 bool isSelectionBoxActive = false;
-bool isCalculationInProcess = false;
 Vector2i lastPressPosition;
 const Color selectionBoxColor = Color(255, 50, 50);
 
 Sprite mandelbrotImg;
-Texture mandelbrotTexture;
+RenderTexture mandelbrotTexture;
 
 const Frame startFrame = {-0.5, 0, 2.3, 2.3 * 0.8};
 Frame currentFrame = startFrame;
@@ -47,44 +46,21 @@ void updateShader() {
     mandelbrotShader.setUniform("currentTheme", static_cast<float>(getTheme()));
 }
 
-void calculateMandelbrot() {
+Texture emptyTexture;
+Sprite emptySprite;
+
+void updateMandelbrot() {
     updateShader();
-    return;
-    std::thread thread([] {
-        auto progressBar = gui.get<tgui::ProgressBar>("bar");
-        auto themeBox = gui.get<tgui::ComboBox>("themeBox");
-        auto iterBox = gui.get<tgui::ComboBox>("iterBox");
 
-        themeBox->setEnabled(false);
-        iterBox->setEnabled(false);
+    emptyTexture.create(width, height - panelHeight);
+    emptySprite = Sprite(emptyTexture);
 
-        int imageHeight = height - panelHeight;
-        int mx = width * imageHeight;
-        int barValue = 0;
-        progressBar->setValue(0);
+    mandelbrotTexture.create(width, height - panelHeight);
+    mandelbrotTexture.clear(Color::Black);
+    mandelbrotTexture.draw(emptySprite, &mandelbrotShader);
+    mandelbrotTexture.display();
 
-        isCalculationInProcess = true;
-        Image img; img.create(width, imageHeight);
-        for (int i = 0; i < width; ++i) {
-            for (int j = 0; j < imageHeight; ++j) {
-                img.setPixel(i, j, mandelbrot(i, j, width, imageHeight, currentFrame));
-                int newBarValue = 100 * (i * imageHeight + j) / mx;
-                if (newBarValue > barValue) {
-                    barValue = newBarValue;
-                    progressBar->setValue(barValue);
-                }
-            }
-        }
-        mandelbrotTexture.loadFromImage(img);
-        mandelbrotImg = Sprite(mandelbrotTexture);
-
-        progressBar->setValue(progressBar->getMaximum());
-
-        themeBox->setEnabled(true);
-        iterBox->setEnabled(true);
-        isCalculationInProcess = false;
-    });
-    thread.detach();
+    mandelbrotImg = Sprite(mandelbrotTexture.getTexture());
 }
 
 std::pair<ld, ld> screenToWorld(Vector2f p) {
@@ -100,7 +76,7 @@ void zoom(Vector2i p1, Vector2i p2) {
     framesStack.push_back({cx, cy, sx, sy});
     currentFrame = framesStack.back();
 
-    calculateMandelbrot();
+    updateMandelbrot();
 }
 
 void revertFrame() {
@@ -109,7 +85,7 @@ void revertFrame() {
     framesStack.pop_back();
     currentFrame = framesStack.back();
 
-    calculateMandelbrot();
+    updateMandelbrot();
 }
 
 void processEvent(Event &event) {
@@ -123,7 +99,7 @@ void processEvent(Event &event) {
         sf::FloatRect visibleArea(0, 0, width, height);
         window.setView(sf::View(visibleArea));
 
-        calculateMandelbrot();
+        updateMandelbrot();
     }
     else if (event.type == Event::MouseButtonPressed
     && event.mouseButton.y < height - panelHeight) {
@@ -157,7 +133,7 @@ void drawBox() {
 }
 
 void saveImage() {
-    mandelbrotTexture.copyToImage().saveToFile("mandelbrot" + std::to_string(time(0)) + ".png");
+    mandelbrotTexture.getTexture().copyToImage().saveToFile("mandelbrot" + std::to_string(time(0)) + ".png");
 }
 
 void createPanel() {
@@ -185,7 +161,6 @@ void createPanel() {
     revertButton->setSize("10%", panelHeight);
     revertButton->setPosition("11%", panelYPosition);
     revertButton->onPress([&] {
-        if (isCalculationInProcess) return;
         revertFrame();
     });
     gui.add(revertButton);
@@ -197,10 +172,9 @@ void createPanel() {
     homeButton->setSize("10%", panelHeight);
     homeButton->setPosition("22%", panelYPosition);
     homeButton->onPress([&] {
-        if (isCalculationInProcess) return;
         framesStack.push_back(startFrame);
         currentFrame = startFrame;
-        calculateMandelbrot();
+        updateMandelbrot();
     });
     gui.add(homeButton);
 
@@ -216,7 +190,7 @@ void createPanel() {
         auto box = gui.get<tgui::ComboBox>("themeBox");
         auto prevTheme = getTheme();
         setTheme(themes[box->getSelectedItem().toStdString()]);
-        if (prevTheme != getTheme()) calculateMandelbrot();
+        if (prevTheme != getTheme()) updateMandelbrot();
     });
     gui.add(themeBox, "themeBox");
     themeBox->setSelectedItem("Green");
@@ -233,7 +207,7 @@ void createPanel() {
         auto box = gui.get<tgui::ComboBox>("iterBox");
         int prevIter = getMaxIter();
         setMaxIter(iterations[box->getSelectedItemIndex()]);
-        if (prevIter != getMaxIter()) calculateMandelbrot();
+        if (prevIter != getMaxIter()) updateMandelbrot();
     });
     gui.add(iterBox, "iterBox");
     iterBox->setSelectedItemByIndex(2);
@@ -254,17 +228,11 @@ int main() {
     }
 
     mandelbrotShader.loadFromFile("mandelbrot.frag", Shader::Fragment);
-    updateShader();
 
     window.create(VideoMode(width, height), "Mandelbrot Viewer");
     window.setFramerateLimit(24);
     createPanel();
-    calculateMandelbrot();
-
-    Image t; t.create(width, height - panelHeight);
-    Texture b; b.loadFromImage(t);
-    Sprite black(b);
-    black.setColor(Color::Black);
+    updateMandelbrot();
 
     while (window.isOpen()) {
         Event event;
@@ -275,8 +243,7 @@ int main() {
             processEvent(event);
         }
         window.clear();
-        if (!isCalculationInProcess)
-            window.draw(black, &mandelbrotShader);
+        window.draw(mandelbrotImg);
         gui.draw();
 
         if (isSelectionBoxActive)
