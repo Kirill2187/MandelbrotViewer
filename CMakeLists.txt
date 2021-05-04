@@ -14,7 +14,7 @@ set(TGUI_DIR "${TGUI_ROOT_DIR}/lib/cmake/TGUI")
 set(SFML_STATIC_LIBRARIES TRUE)
 set(TGUI_STATIC_LIBRARIES TRUE)
 
-add_executable(${PROJECT_NAME} main.cpp mandelbrot.cpp mandelbrot.h)
+add_executable(${PROJECT_NAME} main.cpp mandelbrot.cpp mandelbrot.h mandelbrot.frag)
 
 find_package(SFML REQUIRED COMPONENTS window graphics)
 find_package(TGUI REQUIRED)
@@ -22,6 +22,8 @@ find_package(TGUI REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE sfml-graphics sfml-window tgui)
 file(COPY theme DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY images DESTINATION ${CMAKE_BINARY_DIR})
+
+file(COPY mandelbrot.frag DESTINATION ${CMAKE_BINARY_DIR})
 
 
 

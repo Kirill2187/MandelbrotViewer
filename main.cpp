@@ -5,6 +5,7 @@
 #include <TGUI/Backends/SFML/GuiSFML.hpp>
 #include "thread"
 #include "mutex"
+#include "iostream"
 
 using namespace sf;
 using ld = long double;
@@ -38,7 +39,17 @@ std::map<std::string, ColoringTheme> themes = {
 };
 std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048};
 
+Shader mandelbrotShader;
+
+void updateShader() {
+    mandelbrotShader.setUniform("frame", Glsl::Vec4(currentFrame.cx, currentFrame.cy, currentFrame.sx, currentFrame.sy));
+    mandelbrotShader.setUniform("maxIter", static_cast<float>(getMaxIter()));
+    mandelbrotShader.setUniform("currentTheme", static_cast<float>(getTheme()));
+}
+
 void calculateMandelbrot() {
+    updateShader();
+    return;
     std::thread thread([] {
         auto progressBar = gui.get<tgui::ProgressBar>("bar");
         auto themeBox = gui.get<tgui::ComboBox>("themeBox");
@@ -237,10 +248,23 @@ void createPanel() {
 }
 
 int main() {
+    if (!Shader::isAvailable()) {
+        std::cout << "Shaders is not available!" << std::endl;
+        exit(0);
+    }
+
+    mandelbrotShader.loadFromFile("mandelbrot.frag", Shader::Fragment);
+    updateShader();
+
     window.create(VideoMode(width, height), "Mandelbrot Viewer");
     window.setFramerateLimit(24);
     createPanel();
     calculateMandelbrot();
+
+    Image t; t.create(width, height - panelHeight);
+    Texture b; b.loadFromImage(t);
+    Sprite black(b);
+    black.setColor(Color::Black);
 
     while (window.isOpen()) {
         Event event;
@@ -252,7 +276,7 @@ int main() {
         }
         window.clear();
         if (!isCalculationInProcess)
-            window.draw(mandelbrotImg);
+            window.draw(black, &mandelbrotShader);
         gui.draw();
 
         if (isSelectionBoxActive)
