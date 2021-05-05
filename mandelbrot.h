@@ -4,7 +4,7 @@
 using ld = long double;
 
 enum ColoringTheme {
-    RED, GREEN, BLUE
+    RED, GREEN, BLUE, RAINBOW
 };
 
 struct Frame {

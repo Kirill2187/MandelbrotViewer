@@ -35,6 +35,7 @@ std::map<std::string, ColoringTheme> themes = {
         {"Green", GREEN},
         {"Red", RED},
         {"Blue", BLUE},
+        {"Rainbow", RAINBOW},
 };
 std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048};
 

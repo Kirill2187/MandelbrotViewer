@@ -30,13 +30,30 @@ vec4 getColor(float iter) {
     }
 }
 
+vec4 getColor2(float iter) {
+    float q = iter / maxIter * 7.0;
+    float rise = mod(q, 1.0);
+    float fall = 1.0 - rise;
+    q = floor(q);
+
+    if (q == 0.0)       return vec4(rise, 0.0, 0.0, 1.0);
+    else if (q == 1.0)  return vec4(1.0, rise, 0.0, 1.0);
+    else if (q == 2.0)  return vec4(fall, 1.0, 0.0, 1.0);
+    else if (q == 3.0)  return vec4(0.0, 1.0, rise, 1.0);
+    else if (q == 4.0)  return vec4(0.0, fall, 1.0, 1.0);
+    else if (q == 5.0)  return vec4(rise, 0.0, 1.0, 1.0);
+    else if (q == 6.0)  return vec4(1.0, rise, 1.0, 1.0);
+
+    return vec4(0, 0, 0, 1);
+}
+
 vec4 mandelbrot(float x, float y) {
     float x1 = (x - 0.5) * frame.z + frame.x, y1 = (y - 0.5) * frame.w + frame.y;
     float cx = x1, cy = y1;
     for (int i = 0; i < maxIter; ++i) {
         float xs = x1 * x1, ys = y1 * y1;
         if (xs + ys >= 4)
-            return getColor(i);
+            return (currentTheme == 3 ? getColor2(i) : getColor(i));
         float x2 = xs - ys + cx;
         float y2 = 2 * x1 * y1 + cy;
         x1 = x2; y1 = y2;
