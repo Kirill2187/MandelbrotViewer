@@ -19,7 +19,7 @@ struct Frame {
 };
 
 unsigned int width = VideoMode::getDesktopMode().width, height = VideoMode::getDesktopMode().height;
-unsigned int panelHeight = height * PANEL_SIZE;
+unsigned int panelHeight = static_cast<unsigned int>(height * PANEL_SIZE);
 RenderWindow window;
 
 bool isSelectionBoxActive = false;
@@ -92,7 +92,7 @@ std::pair<ld, ld> screenToWorld(Vector2f p) {
 }
 
 void zoom(Vector2i p1, Vector2i p2) {
-    auto p = screenToWorld(((Vector2f)p1 + (Vector2f)p2) / 2.0f);
+    auto p = screenToWorld((static_cast<Vector2f>(p1) + static_cast<Vector2f>(p2)) / 2.0f);
     ld cx = p.first; ld cy = p.second;
     ld sx = currentFrame.sx / width * abs(p1.x - p2.x);
     ld sy = currentFrame.sy / (height - panelHeight) * abs(p1.y - p2.y);
