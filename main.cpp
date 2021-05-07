@@ -37,7 +37,7 @@ std::map<std::string, ColoringTheme> themes = {
         {"Blue", BLUE},
         {"Rainbow", RAINBOW},
 };
-std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048};
+std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048, 10000};
 
 Shader mandelbrotShader;
 
@@ -212,14 +212,6 @@ void createPanel() {
     });
     gui.add(iterBox, "iterBox");
     iterBox->setSelectedItemByIndex(2);
-
-    auto progressBar = tgui::ProgressBar::create();
-    progressBar->setRenderer(mainTheme.getRenderer("ProgressBar"));
-    progressBar->setPosition("67%", panelYPosition);
-    progressBar->setSize("33%", panelHeight);
-    progressBar->setMinimum(0); progressBar->setMaximum(110);
-    progressBar->setValue(0);
-    gui.add(progressBar, "bar");
 }
 
 int main() {
