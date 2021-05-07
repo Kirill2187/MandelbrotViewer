@@ -14,7 +14,7 @@ set(TGUI_DIR "${TGUI_ROOT_DIR}/lib/cmake/TGUI")
 set(SFML_STATIC_LIBRARIES TRUE)
 set(TGUI_STATIC_LIBRARIES TRUE)
 
-add_executable(${PROJECT_NAME} main.cpp mandelbrot.cpp mandelbrot.h mandelbrot.frag)
+add_executable(${PROJECT_NAME} main.cpp)
 
 find_package(SFML REQUIRED COMPONENTS window graphics)
 find_package(TGUI REQUIRED)

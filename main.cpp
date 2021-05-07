@@ -1,10 +1,7 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
-#include "mandelbrot.h"
 #include "TGUI/AllWidgets.hpp"
 #include <TGUI/Backends/SFML/GuiSFML.hpp>
-#include "thread"
-#include "mutex"
 #include "iostream"
 
 using namespace sf;
@@ -12,6 +9,14 @@ using ld = long double;
 
 #define THEME_PATH "theme/Black.txt"
 #define PANEL_SIZE 0.06
+
+enum ColoringTheme {
+    RED, GREEN, BLUE, RAINBOW
+};
+
+struct Frame {
+    ld cx, cy, sx, sy;
+};
 
 unsigned int width = VideoMode::getDesktopMode().width, height = VideoMode::getDesktopMode().height;
 unsigned int panelHeight = height * PANEL_SIZE;
@@ -38,6 +43,23 @@ std::map<std::string, ColoringTheme> themes = {
         {"Rainbow", RAINBOW},
 };
 std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048, 10000};
+
+int max_iter = 256;
+ColoringTheme currentTheme = GREEN;
+
+void setMaxIter(int iter) {
+    max_iter = iter;
+}
+int getMaxIter() {
+    return max_iter;
+}
+
+void setTheme(ColoringTheme theme) {
+    currentTheme = theme;
+}
+ColoringTheme getTheme() {
+    return currentTheme;
+}
 
 Shader mandelbrotShader;
 
