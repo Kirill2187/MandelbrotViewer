@@ -13,7 +13,7 @@ using ld = long double;
 #define THEME_PATH "theme/Black.txt"
 #define PANEL_SIZE 0.06
 
-unsigned int width = 1000, height = 800;
+unsigned int width = VideoMode::getDesktopMode().width, height = VideoMode::getDesktopMode().height;
 unsigned int panelHeight = height * PANEL_SIZE;
 RenderWindow window;
 
@@ -141,6 +141,7 @@ void createPanel() {
     auto downloadTexture = new tgui::Texture(); downloadTexture->load("images/download.png");
     auto homeTexture = new tgui::Texture(); homeTexture->load("images/home.png");
     auto returnTexture = new tgui::Texture(); returnTexture->load("images/return.png");
+    auto crossTexture = new tgui::Texture(); crossTexture->load("images/cross.png");
 
     gui.setTarget(window);
     tgui::Layout panelHeight(std::to_string(int(PANEL_SIZE * 100)) + "%");
@@ -166,6 +167,17 @@ void createPanel() {
     });
     gui.add(revertButton);
 
+    auto quitButton = tgui::BitmapButton::create();
+    quitButton->setImageScaling(1);
+    quitButton->setImage(*crossTexture);
+    quitButton->setRenderer(mainTheme.getRenderer("Button"));
+    quitButton->setSize("10%", panelHeight);
+    quitButton->setPosition("90%", panelYPosition);
+    quitButton->onPress([&] {
+        window.close();
+    });
+    gui.add(quitButton);
+
     auto homeButton = tgui::BitmapButton::create();
     homeButton->setImageScaling(1);
     homeButton->setImage(*homeTexture);
@@ -182,7 +194,7 @@ void createPanel() {
     auto themeBox = tgui::ComboBox::create();
     themeBox->setRenderer(mainTheme.getRenderer("ComboBox"));
     themeBox->setSize("12%", panelHeight);
-    themeBox->setPosition("33%", panelYPosition);
+    themeBox->setPosition("43%", panelYPosition);
     for (const auto& element : themes) {
         themeBox->addItem(element.first);
     }
@@ -199,7 +211,7 @@ void createPanel() {
     auto iterBox = tgui::ComboBox::create();
     iterBox->setRenderer(mainTheme.getRenderer("ComboBox"));
     iterBox->setSize("20%", panelHeight);
-    iterBox->setPosition("46%", panelYPosition);
+    iterBox->setPosition("56%", panelYPosition);
     for (const auto& element : iterations) {
         iterBox->addItem(std::to_string(element) + " iterations");
     }
@@ -222,7 +234,7 @@ int main() {
 
     mandelbrotShader.loadFromFile("mandelbrot.frag", Shader::Fragment);
 
-    window.create(VideoMode(width, height), "Mandelbrot Viewer");
+    window.create(VideoMode::getFullscreenModes()[0], "Mandelbrot Viewer", Style::Fullscreen);
     window.setFramerateLimit(24);
     createPanel();
     updateMandelbrot();
