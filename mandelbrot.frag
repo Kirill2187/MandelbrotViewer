@@ -1,4 +1,4 @@
-#version 140
+#version 130
 #define BRIGHTNESS 1.8
 
 uniform float maxIter = 512;
