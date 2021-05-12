@@ -1,13 +1,10 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
-#include "TGUI/AllWidgets.hpp"
-#include <TGUI/Backends/SFML/GuiSFML.hpp>
 #include "iostream"
 
 using namespace sf;
 using ld = long double;
 
-#define THEME_PATH "theme/Black.txt"
 #define PANEL_SIZE 0.06
 
 enum ColoringTheme {
@@ -32,9 +29,6 @@ RenderTexture mandelbrotTexture;
 const Frame startFrame = {-0.5, 0, 2.3, 2.3 * 0.8};
 Frame currentFrame = startFrame;
 std::vector<Frame> framesStack = {startFrame};
-
-tgui::GuiSFML gui;
-tgui::Theme mainTheme{THEME_PATH};
 
 std::map<std::string, ColoringTheme> themes = {
         {"Green", GREEN},
@@ -159,95 +153,6 @@ void saveImage() {
     mandelbrotTexture.getTexture().copyToImage().saveToFile("mandelbrot" + std::to_string(time(0)) + ".png");
 }
 
-void createPanel() {
-    auto downloadTexture = new tgui::Texture(); downloadTexture->load("images/download.png");
-    auto homeTexture = new tgui::Texture(); homeTexture->load("images/home.png");
-    auto returnTexture = new tgui::Texture(); returnTexture->load("images/return.png");
-    auto crossTexture = new tgui::Texture(); crossTexture->load("images/cross.png");
-
-    gui.setTarget(window);
-    tgui::Layout panelHeight(std::to_string(int(PANEL_SIZE * 100)) + "%");
-    tgui::Layout panelYPosition(std::to_string(100 - int(PANEL_SIZE * 100)) + "%");
-
-    auto saveButton = tgui::BitmapButton::create();
-    saveButton->setImageScaling(1);
-    saveButton->setImage(*downloadTexture);
-    saveButton->setRenderer(mainTheme.getRenderer("Button"));
-    saveButton->setSize("10%", panelHeight);
-    saveButton->setPosition(0, panelYPosition);
-    saveButton->onPress(&saveImage);
-    gui.add(saveButton);
-
-    auto revertButton = tgui::BitmapButton::create();
-    revertButton->setImageScaling(1);
-    revertButton->setImage(*returnTexture);
-    revertButton->setRenderer(mainTheme.getRenderer("Button"));
-    revertButton->setSize("10%", panelHeight);
-    revertButton->setPosition("11%", panelYPosition);
-    revertButton->onPress([&] {
-        revertFrame();
-    });
-    gui.add(revertButton);
-
-    auto quitButton = tgui::BitmapButton::create();
-    quitButton->setImageScaling(1);
-    quitButton->setImage(*crossTexture);
-    quitButton->setRenderer(mainTheme.getRenderer("Button"));
-    quitButton->setSize("10%", panelHeight);
-    quitButton->setPosition("90%", panelYPosition);
-    quitButton->onPress([&] {
-        window.close();
-    });
-    gui.add(quitButton);
-
-    auto homeButton = tgui::BitmapButton::create();
-    homeButton->setImageScaling(1);
-    homeButton->setImage(*homeTexture);
-    homeButton->setRenderer(mainTheme.getRenderer("Button"));
-    homeButton->setSize("10%", panelHeight);
-    homeButton->setPosition("22%", panelYPosition);
-    homeButton->onPress([&] {
-        framesStack.push_back(startFrame);
-        currentFrame = startFrame;
-        updateMandelbrot();
-    });
-    gui.add(homeButton);
-
-    auto themeBox = tgui::ComboBox::create();
-    themeBox->setRenderer(mainTheme.getRenderer("ComboBox"));
-    themeBox->setSize("12%", panelHeight);
-    themeBox->setPosition("43%", panelYPosition);
-    for (const auto& element : themes) {
-        themeBox->addItem(element.first);
-    }
-    themeBox->setTextSize(16);
-    themeBox->onItemSelect([&] {
-        auto box = gui.get<tgui::ComboBox>("themeBox");
-        auto prevTheme = getTheme();
-        setTheme(themes[box->getSelectedItem().toStdString()]);
-        if (prevTheme != getTheme()) updateMandelbrot();
-    });
-    gui.add(themeBox, "themeBox");
-    themeBox->setSelectedItem("Green");
-
-    auto iterBox = tgui::ComboBox::create();
-    iterBox->setRenderer(mainTheme.getRenderer("ComboBox"));
-    iterBox->setSize("20%", panelHeight);
-    iterBox->setPosition("56%", panelYPosition);
-    for (const auto& element : iterations) {
-        iterBox->addItem(std::to_string(element) + " iterations");
-    }
-    iterBox->setTextSize(16);
-    iterBox->onItemSelect([&] {
-        auto box = gui.get<tgui::ComboBox>("iterBox");
-        int prevIter = getMaxIter();
-        setMaxIter(iterations[box->getSelectedItemIndex()]);
-        if (prevIter != getMaxIter()) updateMandelbrot();
-    });
-    gui.add(iterBox, "iterBox");
-    iterBox->setSelectedItemByIndex(2);
-}
-
 int main() {
     if (!Shader::isAvailable()) {
         std::cout << "Shaders is not available!" << std::endl;
@@ -258,20 +163,15 @@ int main() {
 
     window.create(VideoMode::getFullscreenModes()[0], "Mandelbrot Viewer", Style::Fullscreen);
     window.setFramerateLimit(24);
-    createPanel();
     updateMandelbrot();
 
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
-            if (gui.handleEvent(event)) {
-                isSelectionBoxActive = false;
-            }
             processEvent(event);
         }
         window.clear();
         window.draw(mandelbrotImg);
-        gui.draw();
 
         if (isSelectionBoxActive)
             drawBox();
