@@ -1,6 +1,8 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 #include "iostream"
+#include "GUI.h"
+#include "ImageButton.h"
 
 using namespace sf;
 using ld = long double;
@@ -18,6 +20,8 @@ struct Frame {
 unsigned int width = VideoMode::getDesktopMode().width, height = VideoMode::getDesktopMode().height;
 unsigned int panelHeight = static_cast<unsigned int>(height * PANEL_SIZE);
 RenderWindow window;
+
+GUI gui(&window);
 
 bool isSelectionBoxActive = false;
 Vector2i lastPressPosition;
@@ -153,6 +157,13 @@ void saveImage() {
     mandelbrotTexture.getTexture().copyToImage().saveToFile("mandelbrot" + std::to_string(time(0)) + ".png");
 }
 
+void createPanel() {
+    auto* test = new ImageButton("images/cross.png");
+    test->setPosition(0, height - panelHeight);
+    test->setSize(2 * panelHeight, panelHeight);
+    gui.addWidget(test);
+}
+
 int main() {
     if (!Shader::isAvailable()) {
         std::cout << "Shaders is not available!" << std::endl;
@@ -163,15 +174,18 @@ int main() {
 
     window.create(VideoMode::getFullscreenModes()[0], "Mandelbrot Viewer", Style::Fullscreen);
     window.setFramerateLimit(24);
+    createPanel();
     updateMandelbrot();
 
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
+            if (gui.handleEvent(event)) continue;
             processEvent(event);
         }
         window.clear();
         window.draw(mandelbrotImg);
+        gui.draw();
 
         if (isSelectionBoxActive)
             drawBox();

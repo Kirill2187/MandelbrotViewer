@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(PROJECT_NAME MandelbrotViewer)
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp GUI.cpp GUI.h Widget.cpp Widget.h ImageButton.cpp ImageButton.h)
 
 set(SFML_STATIC_LIBRARIES TRUE)
 
