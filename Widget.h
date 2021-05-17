@@ -9,6 +9,7 @@ public:
     virtual bool mouseEntered() = 0;
     virtual bool mouseExit() = 0;
     virtual bool mouseClicked() = 0;
+    virtual bool mousePressed() = 0;
     virtual void draw(sf::RenderTarget* target) = 0;
 
     virtual void setSize(int width, int height);
@@ -17,6 +18,7 @@ public:
 protected:
     int x, y, width, height;
     bool isMouseInside;
+    bool isMousePressedInside;
 };
 
 

@@ -9,14 +9,19 @@ public:
     bool mouseEntered() override;
     bool mouseExit() override;
     bool mouseClicked() override;
-    void draw(sf::RenderTarget *target) override;
-    void setPosition(int x, int y) override;
-    void setSize(int width, int height) override;
+    void draw(sf::RenderTarget*) override;
+    void setPosition(int, int) override;
+    bool mousePressed() override;
 
+    void setSize(int, int) override;
+    void setOnClick(void (*func) ());
 private:
+    sf::Sprite buttonUpSprite, buttonDownSprite, buttonSelectedSprite;
     void updateImagePosition();
+    static void resizeSprite(sf::Sprite&, float, float);
     sf::Texture texture;
     sf::Sprite image;
+    void (*onClick) ();
 };
 
 

@@ -161,6 +161,9 @@ void createPanel() {
     auto* test = new ImageButton("images/cross.png");
     test->setPosition(0, height - panelHeight);
     test->setSize(2 * panelHeight, panelHeight);
+    test->setOnClick([] () {
+        window.close();
+    });
     gui.addWidget(test);
 }
 

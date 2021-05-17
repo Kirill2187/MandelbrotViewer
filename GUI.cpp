@@ -12,7 +12,7 @@ bool GUI::handleEvent(const sf::Event& event) {
 }
 
 void GUI::setTarget(sf::RenderTarget* target) {
-//    this->target = target;
+    this->target = target;
 }
 
 void GUI::draw() {
