@@ -8,6 +8,7 @@ using namespace sf;
 using ld = long double;
 
 #define PANEL_SIZE 0.06
+#define BUTTON_WIDTH 150
 
 enum ColoringTheme {
     RED, GREEN, BLUE, RAINBOW
@@ -158,13 +159,39 @@ void saveImage() {
 }
 
 void createPanel() {
-    auto* test = new ImageButton("images/cross.png");
-    test->setPosition(0, height - panelHeight);
-    test->setSize(2 * panelHeight, panelHeight);
-    test->setOnClick([] () {
+    auto* quitButton = new ImageButton("images/cross.png");
+    quitButton->setPosition(width - 200, height - panelHeight);
+    quitButton->setSize(BUTTON_WIDTH, panelHeight);
+    quitButton->setOnClick([] () {
         window.close();
     });
-    gui.addWidget(test);
+    gui.addWidget(quitButton);
+
+    auto* revertButton = new ImageButton("images/return.png");
+    revertButton->setPosition(0, height - panelHeight);
+    revertButton->setSize(BUTTON_WIDTH, panelHeight);
+    revertButton->setOnClick([] () {
+        revertFrame();
+    });
+    gui.addWidget(revertButton);
+
+    auto* homeButton = new ImageButton("images/home.png");
+    homeButton->setPosition(BUTTON_WIDTH + 20, height - panelHeight);
+    homeButton->setSize(BUTTON_WIDTH, panelHeight);
+    homeButton->setOnClick([] () {
+        currentFrame = startFrame;
+        framesStack.push_back(currentFrame);
+        updateMandelbrot();
+    });
+    gui.addWidget(homeButton);
+
+    auto* saveButton = new ImageButton("images/download.png");
+    saveButton->setPosition(2 * BUTTON_WIDTH + 40, height - panelHeight);
+    saveButton->setSize(BUTTON_WIDTH, panelHeight);
+    saveButton->setOnClick([] () {
+        saveImage();
+    });
+    gui.addWidget(saveButton);
 }
 
 int main() {
