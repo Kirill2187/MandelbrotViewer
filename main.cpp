@@ -25,13 +25,13 @@ RenderWindow window;
 GUI gui(&window);
 
 bool isSelectionBoxActive = false;
-Vector2i lastPressPosition;
+Vector2f lastPressPosition;
 const Color selectionBoxColor = Color(255, 50, 50);
 
 Sprite mandelbrotImg;
 RenderTexture mandelbrotTexture;
 
-const Frame startFrame = {-0.5, 0, 2.3, 2.3 * 0.8};
+const Frame startFrame = {-0.5, 0, 4.0, 4.0 * (height - panelHeight) / width};
 Frame currentFrame = startFrame;
 std::vector<Frame> framesStack = {startFrame};
 
@@ -44,7 +44,7 @@ std::map<std::string, ColoringTheme> themes = {
 std::vector<int> iterations = {64, 128, 256, 512, 1024, 2048, 10000};
 
 int max_iter = 256;
-ColoringTheme currentTheme = GREEN;
+ColoringTheme currentTheme = RAINBOW;
 
 void setMaxIter(int iter) {
     max_iter = iter;
@@ -90,8 +90,19 @@ std::pair<ld, ld> screenToWorld(Vector2f p) {
             currentFrame.cy + currentFrame.sy * ((ld)p.y / (height - panelHeight) - 0.5)};
 }
 
-void zoom(Vector2i p1, Vector2i p2) {
-    auto p = screenToWorld((static_cast<Vector2f>(p1) + static_cast<Vector2f>(p2)) / 2.0f);
+Vector2f makeSelectionBoxCorrect(Vector2f sz) {
+    float r = (float) width / (float) (height - panelHeight);
+    if (std::abs(sz.x / sz.y) > r) {
+        sz.x = sz.x / std::abs(sz.x) * std::abs(sz.y) * r;
+    }
+    else {
+        sz.y = sz.y / std::abs(sz.y) * std::abs(sz.x) / r;
+    }
+    return sz;
+}
+
+void zoom(Vector2f p1, Vector2f p2) {
+    auto p = screenToWorld((p1 + p2) / 2.0f);
     ld cx = p.first; ld cy = p.second;
     ld sx = currentFrame.sx / width * abs(p1.x - p2.x);
     ld sy = currentFrame.sy / (height - panelHeight) * abs(p1.y - p2.y);
@@ -126,11 +137,13 @@ void processEvent(Event &event) {
     else if (event.type == Event::MouseButtonPressed
     && event.mouseButton.y < height - panelHeight) {
         isSelectionBoxActive = true;
-        lastPressPosition = {event.mouseButton.x, event.mouseButton.y};
+        lastPressPosition = {static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y)};
     }
     else if (event.type == Event::MouseButtonReleased) {
-        if (isSelectionBoxActive && event.mouseButton.y < height - panelHeight)
-            zoom(lastPressPosition, {event.mouseButton.x, event.mouseButton.y});
+        if (isSelectionBoxActive && event.mouseButton.y < height - panelHeight) {
+            Vector2f sz = makeSelectionBoxCorrect(Vector2f((event.mouseButton.x - lastPressPosition.x),(event.mouseButton.y - lastPressPosition.y)));
+            zoom(lastPressPosition, lastPressPosition + sz);
+        }
         isSelectionBoxActive = false;
     }
     else if (event.type == Event::MouseMoved) {
@@ -145,8 +158,9 @@ void processEvent(Event &event) {
 void drawBox() {
     Vector2i mousePos = Mouse::getPosition(window);
 
-    RectangleShape rect(Vector2f((mousePos.x - lastPressPosition.x),
-                                 (mousePos.y - lastPressPosition.y)));
+    auto sz = makeSelectionBoxCorrect(Vector2f((mousePos.x - lastPressPosition.x),(mousePos.y - lastPressPosition.y)));
+
+    RectangleShape rect(sz);
     rect.setFillColor(Color::Transparent);
     rect.setPosition(lastPressPosition.x, lastPressPosition.y);
     rect.setOutlineThickness(1);
