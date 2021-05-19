@@ -19,7 +19,8 @@ bool ImageButton::mousePressed() {
 }
 
 void ImageButton::draw(sf::RenderTarget *target) {
-    target->draw(!isMouseInside ? buttonUpSprite : (isMousePressedInside ? buttonDownSprite : buttonSelectedSprite));
+    if (drawButtonImage)
+        target->draw(!isMouseInside ? buttonUpSprite : (isMousePressedInside ? buttonDownSprite : buttonSelectedSprite));
     target->draw(image);
 }
 
@@ -81,4 +82,8 @@ void ImageButton::setImage(const sf::Sprite &image) {
     this->image = image;
     updateImageSize();
     updateImagePosition();
+}
+
+void ImageButton::setDrawButtonImage(bool drawButtonImage) {
+    ImageButton::drawButtonImage = drawButtonImage;
 }

@@ -32,7 +32,7 @@ Frame MandelbrotRenderer::getFrame() {
 
 void MandelbrotRenderer::updateImage() {
     mandelbrotTexture.create(width, height);
-    mandelbrotTexture.clear(Color::Black);
+    mandelbrotTexture.clear(Color::Transparent);
     mandelbrotTexture.draw(emptySprite, &mandelbrotShader);
     mandelbrotTexture.display();
 

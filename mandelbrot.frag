@@ -36,13 +36,13 @@ vec4 getColor2(float iter) {
     float fall = 1.0 - rise;
     q = floor(q);
 
-    if (q == 0.0)       return vec4(rise, 0.0, 0.0, 1.0);
-    else if (q == 1.0)  return vec4(1.0, rise, 0.0, 1.0);
-    else if (q == 2.0)  return vec4(fall, 1.0, 0.0, 1.0);
-    else if (q == 3.0)  return vec4(0.0, 1.0, rise, 1.0);
-    else if (q == 4.0)  return vec4(0.0, fall, 1.0, 1.0);
-    else if (q == 5.0)  return vec4(rise, 0.0, 1.0, 1.0);
-    else if (q == 6.0)  return vec4(1.0, rise, 1.0, 1.0);
+    if (q == 0.0)       return vec4(rise, 0.0, 0.0, 1);
+    else if (q == 1.0)  return vec4(1.0, rise, 0.0, 1);
+    else if (q == 2.0)  return vec4(fall, 1.0, 0.0, 1);
+    else if (q == 3.0)  return vec4(0.0, 1.0, rise, 1);
+    else if (q == 4.0)  return vec4(0.0, fall, 1.0, 1);
+    else if (q == 5.0)  return vec4(rise, 0.0, 1.0, 1);
+    else if (q == 6.0)  return vec4(1.0, rise, 1.0, 1);
 
     return vec4(0, 0, 0, 1);
 }

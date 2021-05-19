@@ -5,6 +5,7 @@
 
 class ImageButton : public Widget {
 public:
+    ImageButton() = default;
     ImageButton(sf::String pathToTexture);
     bool mouseEntered() override;
     bool mouseExit() override;
@@ -16,7 +17,9 @@ public:
     void setSize(int, int) override;
     void setOnClick(void (*func) ());
     void setImage(const sf::Sprite &image);
+    void setDrawButtonImage(bool drawButtonImage);
 private:
+    bool drawButtonImage = true;
     sf::Sprite buttonUpSprite, buttonDownSprite, buttonSelectedSprite;
     void updateImagePosition();
     static void resizeSprite(sf::Sprite&, float, float);

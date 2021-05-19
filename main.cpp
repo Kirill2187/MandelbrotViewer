@@ -2,6 +2,7 @@
 #include "SFML/Graphics.hpp"
 #include "iostream"
 #include "gui/GUI.h"
+#include "gui/ThemeSwitcher.h"
 #include "gui/ImageButton.h"
 #include "MandelbrotRenderer.h"
 
@@ -141,10 +142,10 @@ void createPanel() {
     gui.addWidget(saveButton);
 
     themeSwitcherRenderer.create(2 * PANEL_HEIGHT, PANEL_HEIGHT, {-0.5, 0, 4, 2});
-    themeSwitcherRenderer.setNumberOfIterations(32);
-    auto* themeButton = new ImageButton("images/download.png");
+    themeSwitcherRenderer.setNumberOfIterations(50);
+    auto* themeButton = new ThemeSwitcher(&themeSwitcherRenderer);
     themeButton->setPosition(3 * BUTTON_WIDTH + 80, IMAGE_HEIGHT);
-    themeButton->setSize(2 * PANEL_HEIGHT + 20, PANEL_HEIGHT);
+    themeButton->setSize(2 * PANEL_HEIGHT, PANEL_HEIGHT);
     themeButton->setImage(themeSwitcherRenderer.getMandelbrotSprite());
     themeButton->setOnClick([] () {
         mainRenderer.setCurrentTheme(static_cast<ColoringTheme>((mainRenderer.getCurrentTheme() + 1) % NUMBER_OF_THEMES));
@@ -168,7 +169,10 @@ int main() {
     while (window.isOpen()) {
         Event event;
         while (window.pollEvent(event)) {
-            if (gui.handleEvent(event)) continue;
+            if (gui.handleEvent(event)) {
+                isSelectionBoxActive = false;
+                continue;
+            };
             processEvent(event);
         }
         window.clear();
