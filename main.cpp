@@ -47,9 +47,18 @@ Vector2f makeSelectionBoxCorrect(Vector2f sz) {
 
 void zoom(Vector2f p1, Vector2f p2) {
     auto p = screenToWorld((p1 + p2) / 2.0f);
+    float r = (float) WIDTH / IMAGE_HEIGHT;
+
     ld cx = p.first; ld cy = p.second;
     ld sx = currentFrame.sx / WIDTH * abs(p1.x - p2.x);
     ld sy = currentFrame.sy / IMAGE_HEIGHT * abs(p1.y - p2.y);
+    if (sy > sx / r) {
+        sx = sy * r;
+    }
+    else if (sx > sy * r) {
+        sy = sx / r;
+    }
+
     framesStack.push_back({cx, cy, sx, sy});
     currentFrame = framesStack.back();
     mainRenderer.setFrame(currentFrame);
@@ -74,7 +83,8 @@ void processEvent(Event &event) {
     }
     else if (event.type == Event::MouseButtonReleased) {
         if (isSelectionBoxActive && event.mouseButton.y < IMAGE_HEIGHT) {
-            Vector2f sz = makeSelectionBoxCorrect(Vector2f((event.mouseButton.x - lastPressPosition.x),(event.mouseButton.y - lastPressPosition.y)));
+//            Vector2f sz = makeSelectionBoxCorrect(Vector2f((event.mouseButton.x - lastPressPosition.x),(event.mouseButton.y - lastPressPosition.y)));
+            Vector2f sz = Vector2f((event.mouseButton.x - lastPressPosition.x),(event.mouseButton.y - lastPressPosition.y));
             zoom(lastPressPosition, lastPressPosition + sz);
         }
         isSelectionBoxActive = false;
@@ -91,7 +101,8 @@ void processEvent(Event &event) {
 void drawBox() {
     Vector2i mousePos = Mouse::getPosition(window);
 
-    auto sz = makeSelectionBoxCorrect(Vector2f((mousePos.x - lastPressPosition.x),(mousePos.y - lastPressPosition.y)));
+//    auto sz = makeSelectionBoxCorrect(Vector2f((mousePos.x - lastPressPosition.x),(mousePos.y - lastPressPosition.y)));
+    auto sz = Vector2f((mousePos.x - lastPressPosition.x),(mousePos.y - lastPressPosition.y));
 
     RectangleShape rect(sz);
     rect.setFillColor(Color::Transparent);
