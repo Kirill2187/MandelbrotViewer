@@ -6,7 +6,7 @@ ColoringTheme MandelbrotRenderer::getCurrentTheme() const {
 
 void MandelbrotRenderer::setCurrentTheme(ColoringTheme currentTheme) {
     MandelbrotRenderer::currentTheme = currentTheme;
-    mandelbrotShader.setUniform("currentTheme", currentTheme);
+    mandelbrotShader.setUniform("currentTheme", (float)currentTheme);
     updateImage();
 }
 
@@ -16,7 +16,7 @@ int MandelbrotRenderer::getNumberOfIterations() const {
 
 void MandelbrotRenderer::setNumberOfIterations(int numberOfIterations) {
     MandelbrotRenderer::numberOfIterations = numberOfIterations;
-    mandelbrotShader.setUniform("maxIter", numberOfIterations);
+    mandelbrotShader.setUniform("maxIter", (float)numberOfIterations);
     updateImage();
 }
 

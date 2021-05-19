@@ -12,6 +12,7 @@ struct Frame {
     ld cx, cy, sx, sy;
 };
 
+static const int NUMBER_OF_THEMES = 4;
 enum ColoringTheme {
     RED, GREEN, BLUE, RAINBOW
 };

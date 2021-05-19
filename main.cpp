@@ -21,7 +21,7 @@ const int MIN_NUMBER_OF_ITERATIONS = 1 << 6, MAX_NUMBER_OF_ITERATIONS = 1 << 15;
 
 RenderWindow window;
 GUI gui(&window);
-MandelbrotRenderer mainRenderer;
+MandelbrotRenderer mainRenderer, themeSwitcherRenderer;
 bool isSelectionBoxActive = false;
 Vector2f lastPressPosition;
 
@@ -139,6 +139,18 @@ void createPanel() {
         saveImage();
     });
     gui.addWidget(saveButton);
+
+    themeSwitcherRenderer.create(2 * PANEL_HEIGHT, PANEL_HEIGHT, {-0.5, 0, 4, 2});
+    themeSwitcherRenderer.setNumberOfIterations(32);
+    auto* themeButton = new ImageButton("images/download.png");
+    themeButton->setPosition(3 * BUTTON_WIDTH + 80, IMAGE_HEIGHT);
+    themeButton->setSize(2 * PANEL_HEIGHT + 20, PANEL_HEIGHT);
+    themeButton->setImage(themeSwitcherRenderer.getMandelbrotSprite());
+    themeButton->setOnClick([] () {
+        mainRenderer.setCurrentTheme(static_cast<ColoringTheme>((mainRenderer.getCurrentTheme() + 1) % NUMBER_OF_THEMES));
+        themeSwitcherRenderer.setCurrentTheme(mainRenderer.getCurrentTheme());
+    });
+    gui.addWidget(themeButton);
 }
 
 int main() {

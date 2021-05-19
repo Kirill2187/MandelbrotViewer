@@ -15,6 +15,7 @@ public:
 
     void setSize(int, int) override;
     void setOnClick(void (*func) ());
+    void setImage(const sf::Sprite &image);
 private:
     sf::Sprite buttonUpSprite, buttonDownSprite, buttonSelectedSprite;
     void updateImagePosition();
@@ -22,6 +23,7 @@ private:
     sf::Texture texture;
     sf::Sprite image;
     void (*onClick) ();
+    void updateImageSize();
 };
 
 

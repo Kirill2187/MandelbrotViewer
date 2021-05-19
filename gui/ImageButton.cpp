@@ -46,18 +46,21 @@ void ImageButton::setPosition(int x, int y) {
 }
 
 void ImageButton::setSize(int width, int height) {
-    float scaleX = (float)width / this->width;
-    float scaleY = (float)height / this->height;
-    float imageScaleFactor = std::min(scaleX, scaleY);
-
-    image.setScale(imageScaleFactor, imageScaleFactor);
-
     resizeSprite(buttonUpSprite, width, height);
     resizeSprite(buttonDownSprite, width, height);
     resizeSprite(buttonSelectedSprite, width, height);
 
     Widget::setSize(width, height);
+    updateImageSize();
     updateImagePosition();
+}
+
+void ImageButton::updateImageSize() {
+    float scaleX = (float)width / image.getGlobalBounds().width;
+    float scaleY = (float)height / image.getGlobalBounds().height;
+    float imageScaleFactor = std::min(scaleX, scaleY);
+
+    image.setScale(imageScaleFactor, imageScaleFactor);
 }
 
 void ImageButton::updateImagePosition() {
@@ -72,4 +75,10 @@ void ImageButton::resizeSprite(sf::Sprite &sprite, float width, float height) {
 
 void ImageButton::setOnClick(void (*func) ()) {
     onClick = func;
+}
+
+void ImageButton::setImage(const sf::Sprite &image) {
+    this->image = image;
+    updateImageSize();
+    updateImagePosition();
 }
