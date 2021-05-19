@@ -12,7 +12,9 @@ struct Frame {
     ld cx, cy, sx, sy;
 };
 
+const int MIN_NUMBER_OF_ITERATIONS = 0, MAX_NUMBER_OF_ITERATIONS = 1 << 15;
 static const int NUMBER_OF_THEMES = 4;
+
 enum ColoringTheme {
     RED, GREEN, BLUE, RAINBOW
 };

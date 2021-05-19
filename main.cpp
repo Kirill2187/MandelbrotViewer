@@ -11,6 +11,7 @@ using ld = long double;
 
 #define PANEL_SIZE 0.06
 #define BUTTON_WIDTH 150
+#define MOUSE_WHEEL_SENSITIVITY 30
 
 const int WIDTH = VideoMode::getDesktopMode().width, HEIGHT = VideoMode::getDesktopMode().height;
 const unsigned int PANEL_HEIGHT = static_cast<unsigned int>(HEIGHT * PANEL_SIZE);
@@ -18,7 +19,6 @@ const int IMAGE_HEIGHT = HEIGHT - PANEL_HEIGHT;
 
 const Color SELECTION_BOX_COLOR = Color(255, 50, 50);
 const Frame START_FRAME = {-0.5, 0, 4.0, 4.0 * (HEIGHT - PANEL_HEIGHT) / WIDTH};
-const int MIN_NUMBER_OF_ITERATIONS = 1 << 6, MAX_NUMBER_OF_ITERATIONS = 1 << 15;
 
 RenderWindow window;
 GUI gui(&window);
@@ -95,6 +95,11 @@ void processEvent(Event &event) {
     }
     else if (event.type == sf::Event::LostFocus) {
         isSelectionBoxActive = false;
+    }
+    else if (event.type == sf::Event::MouseWheelScrolled) {
+        std::cout << event.mouseWheelScroll.delta << std::endl;
+        float k = std::max(1.0f, (float) mainRenderer.getNumberOfIterations() / MOUSE_WHEEL_SENSITIVITY);
+        mainRenderer.setNumberOfIterations(mainRenderer.getNumberOfIterations() + k * event.mouseWheelScroll.delta);
     }
 }
 

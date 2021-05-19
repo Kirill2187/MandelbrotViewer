@@ -15,6 +15,8 @@ int MandelbrotRenderer::getNumberOfIterations() const {
 }
 
 void MandelbrotRenderer::setNumberOfIterations(int numberOfIterations) {
+    if (numberOfIterations < MIN_NUMBER_OF_ITERATIONS) numberOfIterations = MIN_NUMBER_OF_ITERATIONS;
+    if (numberOfIterations > MAX_NUMBER_OF_ITERATIONS) numberOfIterations = MAX_NUMBER_OF_ITERATIONS;
     MandelbrotRenderer::numberOfIterations = numberOfIterations;
     mandelbrotShader.setUniform("maxIter", (float)numberOfIterations);
     updateImage();
@@ -49,7 +51,10 @@ void MandelbrotRenderer::create(int width, int height, Frame frame) {
     mandelbrotShader.loadFromFile(SHADER_PATH, Shader::Fragment);
     emptyTexture.create(width, height);
     emptySprite = Sprite(emptyTexture);
+    mandelbrotShader.setUniform("maxIter", (float)numberOfIterations);
+    mandelbrotShader.setUniform("currentTheme", (float)currentTheme);
     setFrame(frame);
+
 }
 
 const Sprite &MandelbrotRenderer::getMandelbrotSprite() const {
