@@ -25,6 +25,7 @@ GUI gui(&window);
 MandelbrotRenderer mainRenderer, themeSwitcherRenderer;
 bool isSelectionBoxActive = false;
 Vector2f lastPressPosition;
+float mouseWheelRotationPerFrame = 0;
 
 Frame currentFrame = START_FRAME;
 std::vector<Frame> framesStack = {START_FRAME};
@@ -97,9 +98,7 @@ void processEvent(Event &event) {
         isSelectionBoxActive = false;
     }
     else if (event.type == sf::Event::MouseWheelScrolled) {
-        std::cout << event.mouseWheelScroll.delta << std::endl;
-        float k = std::max(1.0f, (float) mainRenderer.getNumberOfIterations() / MOUSE_WHEEL_SENSITIVITY);
-        mainRenderer.setNumberOfIterations(mainRenderer.getNumberOfIterations() + k * event.mouseWheelScroll.delta);
+        mouseWheelRotationPerFrame += event.mouseWheelScroll.delta;
     }
 }
 
@@ -170,6 +169,18 @@ void createPanel() {
     gui.addWidget(themeButton);
 }
 
+void processMouseWheel() {
+    if (mouseWheelRotationPerFrame != 0) {
+        if (std::abs(mouseWheelRotationPerFrame) > 2) {
+            mouseWheelRotationPerFrame = 2 * mouseWheelRotationPerFrame / std::abs(mouseWheelRotationPerFrame);
+        }
+        float k = std::max(1.0f, (float) mainRenderer.getNumberOfIterations() / MOUSE_WHEEL_SENSITIVITY);
+        if (!mainRenderer.getIsBusy())
+            mainRenderer.setNumberOfIterations(mainRenderer.getNumberOfIterations() + k * mouseWheelRotationPerFrame);
+        mouseWheelRotationPerFrame = 0;
+    }
+}
+
 int main() {
     if (!Shader::isAvailable()) {
         std::cerr << "Shaders is not available!" << std::endl;
@@ -178,7 +189,7 @@ int main() {
     mainRenderer.create(WIDTH, IMAGE_HEIGHT, START_FRAME);
 
     window.create(VideoMode::getFullscreenModes()[0], "Mandelbrot Viewer", Style::Fullscreen);
-    window.setFramerateLimit(24);
+    window.setFramerateLimit(15);
     createPanel();
     mainRenderer.updateImage();
 
@@ -191,6 +202,8 @@ int main() {
             };
             processEvent(event);
         }
+        processMouseWheel();
+
         window.clear();
         window.draw(mainRenderer.getMandelbrotSprite());
         gui.draw();

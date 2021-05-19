@@ -30,7 +30,9 @@ private:
     Shader mandelbrotShader;
     Texture emptyTexture;
     Sprite emptySprite;
+    bool isBusy = false;
 public:
+    bool getIsBusy() const;
     MandelbrotRenderer() = default;
     MandelbrotRenderer(int width, int height, Frame frame);
 

@@ -17,8 +17,8 @@ public:
 
 protected:
     int x, y, width, height;
-    bool isMouseInside;
-    bool isMousePressedInside;
+    bool isMouseInside = false;
+    bool isMousePressedInside = false;
 };
 
 
