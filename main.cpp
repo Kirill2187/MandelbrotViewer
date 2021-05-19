@@ -1,8 +1,8 @@
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 #include "iostream"
-#include "GUI.h"
-#include "ImageButton.h"
+#include "gui/GUI.h"
+#include "gui/ImageButton.h"
 
 using namespace sf;
 using ld = long double;

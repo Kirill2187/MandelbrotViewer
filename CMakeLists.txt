@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(PROJECT_NAME MandelbrotViewer)
 
-add_executable(${PROJECT_NAME} main.cpp GUI.cpp GUI.h Widget.cpp Widget.h ImageButton.cpp ImageButton.h AssetManager.cpp AssetManager.h)
+add_executable(${PROJECT_NAME} main.cpp gui/GUI.cpp gui/GUI.h gui/Widget.cpp gui/Widget.h gui/ImageButton.cpp gui/ImageButton.h gui/AssetManager.cpp gui/AssetManager.h)
 
 set(SFML_STATIC_LIBRARIES TRUE)
 
@@ -20,7 +20,6 @@ ELSE()
     target_link_libraries(${PROJECT_NAME} PRIVATE sfml-system sfml-graphics sfml-window)
 ENDIF()
 
-file(COPY theme DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY images DESTINATION ${CMAKE_BINARY_DIR})
 
 file(COPY mandelbrot.frag DESTINATION ${CMAKE_BINARY_DIR})
