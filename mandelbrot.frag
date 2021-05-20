@@ -1,5 +1,5 @@
 #version 130
-#define BRIGHTNESS 1.8
+#define BRIGHTNESS 2
 
 uniform float maxIter = 512;
 uniform float currentTheme = 1;
@@ -49,14 +49,13 @@ vec4 getColor2(float iter) {
 
 vec4 mandelbrot(float x, float y) {
     float x1 = (x - 0.5) * frame.z + frame.x, y1 = (y - 0.5) * frame.w + frame.y;
-    float cx = x1, cy = y1;
+    vec2 c = vec2(x1, y1);
+    vec2 p = c;
     for (int i = 0; i < maxIter; ++i) {
-        float xs = x1 * x1, ys = y1 * y1;
+        float xs = p.x * p.x, ys = p.y * p.y;
         if (xs + ys >= 4)
             return (currentTheme == 3 ? getColor2(i) : getColor(i));
-        float x2 = xs - ys + cx;
-        float y2 = 2 * x1 * y1 + cy;
-        x1 = x2; y1 = y2;
+        p = c + vec2(xs - ys, 2 * p.x * p.y);
     }
     return getColor(maxIter);
 }
