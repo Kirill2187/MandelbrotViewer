@@ -1,3 +1,4 @@
+#include <random>
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
 #include "iostream"
@@ -5,6 +6,7 @@
 #include "gui/ThemeSwitcher.h"
 #include "gui/ImageButton.h"
 #include "MandelbrotRenderer.h"
+#include "math/BigFloat.h"
 
 using namespace sf;
 using ld = long double;
@@ -18,7 +20,7 @@ const unsigned int PANEL_HEIGHT = static_cast<unsigned int>(HEIGHT * PANEL_SIZE)
 const int IMAGE_HEIGHT = HEIGHT - PANEL_HEIGHT;
 
 const Color SELECTION_BOX_COLOR = Color(255, 50, 50);
-const Frame START_FRAME = {-0.5, 0, 4.0, 4.0 * (HEIGHT - PANEL_HEIGHT) / WIDTH};
+const Frame START_FRAME = {create(-0.5), create(0), create(4.0), create(4.0 * (HEIGHT - PANEL_HEIGHT) / WIDTH)};
 
 RenderWindow window;
 GUI gui(&window);
@@ -30,9 +32,9 @@ float mouseWheelRotationPerFrame = 0;
 Frame currentFrame = START_FRAME;
 std::vector<Frame> framesStack = {START_FRAME};
 
-std::pair<ld, ld> screenToWorld(Vector2f p) {
-    return {currentFrame.cx + currentFrame.sx * ((ld)p.x / WIDTH - 0.5),
-            currentFrame.cy + currentFrame.sy * ((ld)p.y / IMAGE_HEIGHT - 0.5)};
+std::pair<big_float, big_float> screenToWorld(Vector2f p) {
+    return {add(currentFrame.cx, multiply(currentFrame.sx, ((double) p.x / WIDTH - 0.5))),
+            add(currentFrame.cy, multiply(currentFrame.sy, ((double) p.y / IMAGE_HEIGHT - 0.5)))};
 }
 
 Vector2f makeSelectionBoxCorrect(Vector2f sz) {
@@ -48,16 +50,16 @@ Vector2f makeSelectionBoxCorrect(Vector2f sz) {
 
 void zoom(Vector2f p1, Vector2f p2) {
     auto p = screenToWorld((p1 + p2) / 2.0f);
-    float r = (float) WIDTH / IMAGE_HEIGHT;
+    double r = (float) WIDTH / IMAGE_HEIGHT;
 
-    ld cx = p.first; ld cy = p.second;
-    ld sx = currentFrame.sx / WIDTH * abs(p1.x - p2.x);
-    ld sy = currentFrame.sy / IMAGE_HEIGHT * abs(p1.y - p2.y);
-    if (sy > sx / r) {
-        sx = sy * r;
+    big_float cx = p.first; big_float cy = p.second;
+    big_float sx = multiply(currentFrame.sx, 1.0 / WIDTH * std::abs(p1.x - p2.x));
+    big_float sy = multiply(currentFrame.sy, 1.0 / IMAGE_HEIGHT * std::abs(p1.y - p2.y));
+    if (greater(sy, multiply(sx, 1.0 / r))) {
+        sx = multiply(sy, r);
     }
-    else if (sx > sy * r) {
-        sy = sx / r;
+    else if (greater(sx, multiply(sy, r))) {
+        sy = multiply(sx, 1.0 / r);
     }
 
     framesStack.push_back({cx, cy, sx, sy});
@@ -156,7 +158,7 @@ void createPanel() {
     });
     gui.addWidget(saveButton);
 
-    themeSwitcherRenderer.create(2 * PANEL_HEIGHT, PANEL_HEIGHT, {-0.5, 0, 4, 2});
+    themeSwitcherRenderer.create(2 * PANEL_HEIGHT, PANEL_HEIGHT, {create(-0.5), create(0), create(4), create(2)});
     themeSwitcherRenderer.setNumberOfIterations(50);
     auto* themeButton = new ThemeSwitcher(&themeSwitcherRenderer);
     themeButton->setPosition(3 * BUTTON_WIDTH + 80, IMAGE_HEIGHT);
@@ -181,7 +183,45 @@ void processMouseWheel() {
     }
 }
 
+std::mt19937 rnd;
+std::uniform_real_distribution<double> unif(-4, 4);
+float randomFloat() {
+    return unif(rnd);
+}
+
+bool eq(float a, float b) {
+    return std::abs(a - b) < 1e-6;
+}
+
+void testBigFloat() {
+    for (int i = 0; i < 10000; ++i) {
+        float f1 = randomFloat(), f2 = randomFloat();
+        float ans = f1 * f2;
+        float ans1 = getFloatValue(multiply(create(f1), create(f2)));
+        if (!eq(ans, ans1)) {
+            std::cout << std::fixed << std::setprecision(10) << "Error: " << f1 << " * " << f2 << std::endl;
+            std::cout << std::fixed << std::setprecision(10) << "Correct: " << ans << std::endl;
+            std::cout << std::fixed << std::setprecision(10) << "Output: " << ans1 << std::endl;
+            exit(-1);
+        }
+    }
+    for (int i = 0; i < 10000; ++i) {
+        float f1 = randomFloat(), f2 = randomFloat();
+        float ans = f1 - f2;
+        float ans1 = getFloatValue(add(create(f1), create(-f2)));
+        if (!eq(ans, ans1)) {
+            std::cout << std::fixed << std::setprecision(10) << "Error: " << f1 << " - " << f2 << std::endl;
+            std::cout << std::fixed << std::setprecision(10) << "Correct: " << ans << std::endl;
+            std::cout << std::fixed << std::setprecision(10) << "Output: " << ans1 << std::endl;
+            exit(-1);
+        }
+    }
+    std::cout << "All tests have passed!" << std::endl;
+}
+
 int main() {
+    testBigFloat();
+
     if (!Shader::isAvailable()) {
         std::cerr << "Shaders is not available!" << std::endl;
         exit(0);

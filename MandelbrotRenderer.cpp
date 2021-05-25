@@ -29,7 +29,10 @@ void MandelbrotRenderer::setNumberOfIterations(int numberOfIterations) {
 void MandelbrotRenderer::setFrame(Frame newFrame) {
     isBusy = true;
     currentFrame = newFrame;
-    mandelbrotShader.setUniform("frame",Glsl::Vec4(currentFrame.cx, currentFrame.cy, currentFrame.sx, currentFrame.sy));
+    mandelbrotShader.setUniform("frame",Glsl::Vec4(getFloatValue(currentFrame.cx),
+                                                   getFloatValue(currentFrame.cy),
+                                                   getFloatValue(currentFrame.sx),
+                                                   getFloatValue(currentFrame.sy)));
     updateImage();
     isBusy = false;
 }

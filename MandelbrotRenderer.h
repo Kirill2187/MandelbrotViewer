@@ -4,12 +4,12 @@
 #define SHADER_PATH "mandelbrot.frag"
 
 #include "SFML/Graphics.hpp"
+#include "math/BigFloat.h"
 
 using namespace sf;
-using ld = long double;
 
 struct Frame {
-    ld cx, cy, sx, sy;
+    big_float cx, cy, sx, sy;
 };
 
 const int MIN_NUMBER_OF_ITERATIONS = 0, MAX_NUMBER_OF_ITERATIONS = 1 << 15;
