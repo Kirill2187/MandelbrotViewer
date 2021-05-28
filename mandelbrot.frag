@@ -1,11 +1,11 @@
 #version 130
 #define BRIGHTNESS 2
+#define BUF_SIZE 9
+#define N 5
+#define BASE 10000
 
 precision highp float;
 precision highp int;
-
-const int BASE = 10000;
-const int N = 5;
 
 uniform float maxIter = 512;
 uniform float currentTheme = 1;
@@ -17,92 +17,96 @@ struct big_float {
     int[N * 2 - 1] num;
     int sign;
 };
+big_float[BUF_SIZE] mem;
 
-big_float new_big_float() {
-    big_float res; res.sign = 1;
-    for (int i = 0; i < 2 * N - 1; ++i) res.num[i] = 0;
-    return res;
+void reset_big_float(int num) {
+    mem[num].sign = 1;
+    for (int i = 0; i < 2 * N - 1; ++i) mem[num].num[i] = 0;
 }
 
-big_float create(float a) {
-    big_float res = new_big_float(); res.sign = int(sign(a));
+int copy(int from, int to) {
+    for (int i = 0; i < N; ++i) mem[to].num[i] = mem[from].num[i];
+    mem[to].sign = mem[from].sign;
+    return to;
+}
+
+int create(float a, int to) {
+    mem[to].sign = int(sign(a));
     a = abs(a);
     float mod = 1.0;
     for (int i = 0; i < N; ++i) {
-        res.num[i] = int(floor(a / mod));
-        a -= float(res.num[i]) * mod;
+        mem[to].num[i] = int(floor(a / mod));
+        a -= float(mem[to].num[i]) * mod;
         mod /= float(BASE);
     }
 
-    return res;
+    return to;
 }
 
-bool greater(big_float a, big_float b) {
-    bool res = a.sign == 1;
+bool greater(int a, int b) {
+    if (mem[a].sign != mem[b].sign) return mem[a].sign > mem[b].sign;
+    bool res = mem[a].sign == 1;
     for (int i = 0; i < N; ++i) {
-        if (a.num[i] == b.num[i]) continue;
-        return res ^^ !(a.num[i] > b.num[i]);
+        if (mem[a].num[i] != mem[b].num[i]) return res ^^ !(mem[a].num[i] > mem[b].num[i]);
     }
     return !res;
 }
 
-big_float subtract(big_float a, big_float b) {
-    a.sign = 1; b.sign = 1;
+int subtract(int a, int b, int to) {
+    mem[a].sign = 1; mem[b].sign = 1;
 
-    big_float res = new_big_float(); int carry = 0;
+    int carry = 0;
     int sign = int(greater(b, a)) * (-2) + 1;
-    res.sign = sign;
+    mem[to].sign = sign;
 
     for (int i = N - 1; i >= 0; --i) {
-        res.num[i] = sign * (a.num[i] - b.num[i]) - carry;
+        mem[to].num[i] = sign * (mem[a].num[i] - mem[b].num[i]) - carry;
         carry = 0;
-        if (res.num[i] < 0) {
-            res.num[i] += BASE; carry = 1;
+        if (mem[to].num[i] < 0) {
+            mem[to].num[i] += BASE; carry = 1;
         }
     }
 
-    return res;
+    return to;
 }
 
-big_float add(big_float a, big_float b) {
-    if (a.sign == 1 && b.sign == -1)
-        return subtract(a, b);
-    if (a.sign == -1 && b.sign == 1)
-        return subtract(b, a);
+int add(int a, int b, int to) {
+    if (mem[a].sign == 1 && mem[b].sign == -1)
+        return subtract(a, b, to);
+    if (mem[a].sign == -1 && mem[b].sign == 1)
+        return subtract(b, a, to);
 
-    big_float res = new_big_float(); int carry = 0;
-    res.sign = a.sign;
+    int carry = 0;
+    mem[to].sign = mem[a].sign;
     for (int i = N - 1; i >= 0; --i) {
-        res.num[i] = a.num[i] + b.num[i] + carry;
+        mem[to].num[i] = mem[a].num[i] + mem[b].num[i] + carry;
         carry = 0;
-        if (res.num[i] >= BASE) {
-            res.num[i] -= BASE; carry = 1;
+        if (mem[to].num[i] >= BASE) {
+            mem[to].num[i] -= BASE; carry = 1;
         }
     }
 
-    return res;
+    return to;
 }
 
-big_float multiply(big_float a, big_float b) {
-    big_float res = new_big_float(); res.sign = a.sign * b.sign;
+int multiply(int a, int b, int to) {
+    reset_big_float(to);
+    mem[to].sign = mem[a].sign * mem[b].sign;
 
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            res.num[i + j] += a.num[i] * b.num[j];
-            if (res.num[i + j] >= BASE) {
-                res.num[i + j - 1] += res.num[i + j] / BASE;
-                res.num[i + j] = int(mod(res.num[i + j], BASE));
-            }
+            mem[to].num[i + j] += mem[a].num[i] * mem[b].num[j];
         }
     }
 
     for (int i = 2 * N - 2; i >= 0; --i) {
-        if (res.num[i] >= BASE) {
-            res.num[i - 1] += res.num[i] / BASE;
-            res.num[i] = int(mod(res.num[i], BASE));
+        if (mem[to].num[i] >= BASE) {
+            mem[to].num[i - 1] += mem[to].num[i] / BASE;
+            mem[to].num[i] = int(mod(mem[to].num[i], BASE));
         }
     }
-    return res;
+
+    return to;
 }
 
 vec4 getColor(float iter) {
@@ -145,43 +149,51 @@ vec4 getColor2(float iter) {
     return vec4(0, 0, 0, 1);
 }
 
-float getFloatValue(big_float a) {
+float getFloatValue(int a) {
     float res = 0;
     float b = 1.0;
     for (int i = 0; i < N; ++i) {
-        res += float(a.num[i]) * b;
+        res += float(mem[a].num[i]) * b;
         b /= BASE;
     }
-    return res * float(a.sign);
+    return res * float(mem[a].sign);
 }
 
 
 vec4 mandelbrot(float x, float y) {
-    big_float four = create(4);
+    for (int i = 0; i < BUF_SIZE; ++i) reset_big_float(i);
 
-    big_float arr[4];
     for (int i = 0; i < (N + 1) * 4; ++i) {
         int j = int(mod(i, N + 1));
-        if (j < N) arr[i / (N + 1)].num[j] = int(frameData[i]);
-        else arr[i / (N + 1)].sign = int(frameData[i]);
+        if (j < N) mem[i / (N + 1)].num[j] = int(frameData[i]);
+        else mem[i / (N + 1)].sign = int(frameData[i]);
     }
 
-    big_float x1 = (add(multiply(create(x - 0.5), arr[2]), arr[0])),
-        y1 = (add(multiply(create(y - 0.5), arr[3]), arr[1]));
-    big_float cx = x1, cy = y1;
-    big_float px = cx, py = cy;
-    big_float xs, ys, buf;
+    int x1 = (add(multiply(create(x - 0.5, 4), 2, 5), 0, 4)),
+        y1 = (add(multiply(create(y - 0.5, 5), 3, 2), 1, 3));
+    create(4, 8);
+
+    /*
+    0 - cx
+    1 - cy
+    2 - px
+    3 - py
+    4, 5, 6, 7 - buf
+    8 - four
+    */
+
+    int cx = copy(4, 0), cy = copy(3, 1);
+    int px = cx, py = cy;
     for (int i = 0; i < maxIter; ++i) {
-        xs = (multiply(px, px)), ys = (multiply(py, py));
-        if (greater(add(xs, ys), four))
+        int xs = (multiply(px, px, 4)), ys = (multiply(py, py, 5));
+        if (mem[add(xs, ys, 6)].num[0] >= 4)
             return (currentTheme == 3 ? getColor2(i) : getColor(i));
 
-        buf = multiply(px, py);
-        py = add(cy, add(buf, buf));
-        px = add(cx, subtract(xs, ys));
-
+        int buf = multiply(px, py, 6);
+        py = add(1, add(buf, buf, 7), 3);
+        px = add(0, subtract(xs, ys, 6), 2);
     }
-    return vec4(0, 0, 0, 1);;
+    return vec4(0, 0, 0, 1);
 }
 
 void main() {

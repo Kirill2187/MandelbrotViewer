@@ -8,6 +8,7 @@
 #include "MandelbrotRenderer.h"
 #include "math/BigFloat.h"
 
+
 using namespace sf;
 using ld = long double;
 
@@ -220,7 +221,7 @@ void testBigFloat() {
 }
 
 int main() {
-    testBigFloat();
+//    testBigFloat();
 
     if (!Shader::isAvailable()) {
         std::cerr << "Shaders is not available!" << std::endl;
