@@ -6,7 +6,7 @@
 #include "SFML/Graphics/Glsl.hpp"
 #include <iomanip>
 
-const double BASE = 1e4;
+const double BASE = 10000;
 const int N = 5;
 
 struct big_float {

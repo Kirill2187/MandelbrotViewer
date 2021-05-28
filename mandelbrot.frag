@@ -4,12 +4,14 @@
 precision highp float;
 precision highp int;
 
-uniform float maxIter = 512;
-uniform float currentTheme = 1;
-uniform vec4 frame; // cx, cy, sx, sy
-
 const int BASE = 10000;
 const int N = 5;
+
+uniform float maxIter = 512;
+uniform float currentTheme = 1;
+uniform float[(N + 1) * 4] frameData;
+
+vec4 frame; // cx, cy, sx, sy
 
 struct big_float {
     int[N * 2 - 1] num;
@@ -23,13 +25,12 @@ big_float new_big_float() {
 }
 
 big_float create(float a) {
-    big_float res = new_big_float(); res.sign = a < 0 ? -1 : 1;
+    big_float res = new_big_float(); res.sign = int(sign(a));
     a = abs(a);
     float mod = 1.0;
     for (int i = 0; i < N; ++i) {
         res.num[i] = int(floor(a / mod));
         a -= float(res.num[i]) * mod;
-        if (a <= 0) return res;
         mod /= float(BASE);
     }
 
@@ -37,12 +38,10 @@ big_float create(float a) {
 }
 
 bool greater(big_float a, big_float b) {
-    if (a.sign == 1 && b.sign == -1) return true;
-    if (a.sign == -1 && b.sign == 1) return false;
     bool res = a.sign == 1;
     for (int i = 0; i < N; ++i) {
-        if (a.num[i] > b.num[i]) return res;
-        else if (a.num[i] < b.num[i]) return !res;
+        if (a.num[i] == b.num[i]) continue;
+        return res ^^ !(a.num[i] > b.num[i]);
     }
     return !res;
 }
@@ -50,26 +49,15 @@ bool greater(big_float a, big_float b) {
 big_float subtract(big_float a, big_float b) {
     a.sign = 1; b.sign = 1;
 
-    big_float res = new_big_float(); int carry = 0, sign = 1;
-    if (greater(b, a)) sign = -1;
+    big_float res = new_big_float(); int carry = 0;
+    int sign = int(greater(b, a)) * (-2) + 1;
     res.sign = sign;
 
-    if (sign == 1) {
-        for (int i = N - 1; i >= 0; --i) {
-            res.num[i] = a.num[i] - b.num[i] - carry;
-            carry = 0;
-            if (res.num[i] < 0) {
-                res.num[i] += BASE; carry = 1;
-            }
-        }
-    }
-    else {
-        for (int i = N - 1; i >= 0; --i) {
-            res.num[i] = b.num[i] - a.num[i] - carry;
-            carry = 0;
-            if (res.num[i] < 0) {
-                res.num[i] += BASE; carry = 1;
-            }
+    for (int i = N - 1; i >= 0; --i) {
+        res.num[i] = sign * (a.num[i] - b.num[i]) - carry;
+        carry = 0;
+        if (res.num[i] < 0) {
+            res.num[i] += BASE; carry = 1;
         }
     }
 
@@ -118,8 +106,6 @@ big_float multiply(big_float a, big_float b) {
 }
 
 vec4 getColor(float iter) {
-    if (iter == maxIter)
-        return vec4(0, 0, 0, 0);
     float q = iter / maxIter;
     if (q > 0.9) {
         float c1 = (-4 * q + 4) * BRIGHTNESS;
@@ -172,22 +158,30 @@ float getFloatValue(big_float a) {
 
 vec4 mandelbrot(float x, float y) {
     big_float four = create(4);
-    big_float two = create(2);
 
-    big_float x1 = (add(multiply(create(x - 0.5), create(frame.z)), create(frame.x))),
-        y1 = (add(multiply(create(y - 0.5), create(frame.w)), create(frame.y)));
+    big_float arr[4];
+    for (int i = 0; i < (N + 1) * 4; ++i) {
+        int j = int(mod(i, N + 1));
+        if (j < N) arr[i / (N + 1)].num[j] = int(frameData[i]);
+        else arr[i / (N + 1)].sign = int(frameData[i]);
+    }
+
+    big_float x1 = (add(multiply(create(x - 0.5), arr[2]), arr[0])),
+        y1 = (add(multiply(create(y - 0.5), arr[3]), arr[1]));
     big_float cx = x1, cy = y1;
     big_float px = cx, py = cy;
+    big_float xs, ys, buf;
     for (int i = 0; i < maxIter; ++i) {
-        big_float xs = (multiply(px, px)), ys = (multiply(py, py));
+        xs = (multiply(px, px)), ys = (multiply(py, py));
         if (greater(add(xs, ys), four))
             return (currentTheme == 3 ? getColor2(i) : getColor(i));
 
-        py = add(cy, multiply(two, multiply(px, py)));
+        buf = multiply(px, py);
+        py = add(cy, add(buf, buf));
         px = add(cx, subtract(xs, ys));
 
     }
-    return getColor(maxIter);
+    return vec4(0, 0, 0, 1);;
 }
 
 void main() {

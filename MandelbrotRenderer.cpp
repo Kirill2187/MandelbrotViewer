@@ -29,10 +29,14 @@ void MandelbrotRenderer::setNumberOfIterations(int numberOfIterations) {
 void MandelbrotRenderer::setFrame(Frame newFrame) {
     isBusy = true;
     currentFrame = newFrame;
-    mandelbrotShader.setUniform("frame",Glsl::Vec4(getFloatValue(currentFrame.cx),
-                                                   getFloatValue(currentFrame.cy),
-                                                   getFloatValue(currentFrame.sx),
-                                                   getFloatValue(currentFrame.sy)));
+    float data[(N + 1) * 4];
+    big_float arr[4] = {currentFrame.cx, currentFrame.cy, currentFrame.sx, currentFrame.sy};
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < N; ++j) data[(N + 1) * i + j] = arr[i].num[j];
+        data[(N + 1) * i + N] = arr[i].sign;
+    }
+
+    mandelbrotShader.setUniformArray("frameData", data, (N + 1) * 4);
     updateImage();
     isBusy = false;
 }
